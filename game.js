@@ -201,29 +201,29 @@
   const residentialRoads = buildLocalStreets();
 
   const buildings = [
-    { id: "soriana", x: 40, y: 1125, w: 640, h: 390, label: "SORIANA HIPER COLIMA", roof: "#c7c4bc", accent: "#2878cd" },
-    { id: "cityclub", x: 760, y: 1390, w: 490, h: 330, label: "CITY CLUB", roof: "#c1beb6", accent: "#277bd2" },
-    { id: "kfc", x: 1440, y: 1160, w: 220, h: 145, label: "KFC VILLA DE ÁLVAREZ", roof: "#d8d0c1", accent: "#e43c35" },
-    { id: "little", x: 1960, y: 1470, w: 255, h: 150, label: "LITTLE CAESARS", roof: "#d4c8b5", accent: "#f17e27" },
-    { id: "eve-house", x: 1610, y: 810, w: 180, h: 150, label: "CASA DE EVE", roof: "#696b66", accent: "#ff2f91", special: true },
-    { id: "barbacoa", x: 1930, y: 360, w: 225, h: 135, label: "BARBACOA LA HIGUERA", roof: "#a06c4f", accent: "#e6692b" },
+    { id: "soriana", x: 40, y: 1125, w: 640, h: 390, label: "SORIANA HIPER COLIMA", roof: "#c8443f", accent: "#2878cd" },
+    { id: "cityclub", x: 760, y: 1390, w: 490, h: 330, label: "CITY CLUB", roof: "#3f6fa8", accent: "#277bd2" },
+    { id: "kfc", x: 1440, y: 1160, w: 220, h: 145, label: "KFC VILLA DE ÁLVAREZ", roof: "#d6544a", accent: "#e43c35" },
+    { id: "little", x: 1960, y: 1470, w: 255, h: 150, label: "LITTLE CAESARS", roof: "#e08a3c", accent: "#f17e27" },
+    { id: "eve-house", x: 1610, y: 810, w: 180, h: 150, label: "CASA DE EVE", roof: "#b0708a", accent: "#ff2f91", special: true },
+    { id: "barbacoa", x: 1930, y: 360, w: 225, h: 135, label: "BARBACOA LA HIGUERA", roof: "#b5613a", accent: "#e6692b" },
     { id: "local-a", x: 95, y: 440, w: 240, h: 160, roof: "#8f8172", accent: "#56514c" },
     { id: "local-b", x: 1010, y: 1070, w: 245, h: 140, roof: "#a09582", accent: "#686056" },
     { id: "local-c", x: 1815, y: 1010, w: 250, h: 135, roof: "#8e8b82", accent: "#4b4c4d" },
     { id: "local-d", x: 2070, y: 650, w: 150, h: 175, roof: "#9c917d", accent: "#6d6355" },
-    { id: "pelicano", x: 2700, y: 1240, w: 255, h: 150, label: "EL PELÍCANO", roof: "#837260", accent: "#e7ff1f", interactable: true },
+    { id: "pelicano", x: 2700, y: 1240, w: 255, h: 150, label: "EL PELÍCANO", roof: "#b8843f", accent: "#e7ff1f", interactable: true },
     { id: "jardin", x: 3180, y: 610, w: 360, h: 230, label: "JARDÍN DEL PISTO", roof: "#315a45", accent: "#ff2f91", garden: true },
-    { id: "rifa", x: 3300, y: 1850, w: 175, h: 125, label: "RIFAS EL AFERRADO", roof: "#6e527d", accent: "#2bd9d5", interactable: true },
-    { id: "empeno", x: 3780, y: 2070, w: 245, h: 145, label: "EMPEÑO VOLCÁN", roof: "#8a7652", accent: "#e7c447", interactable: true },
-    { id: "marina", x: 4300, y: 650, w: 560, h: 310, label: "LA MARINA SAN FERNANDO", roof: "#bab8b1", accent: "#3e75bb", interactable: true },
-    { id: "banco", x: 4320, y: 1900, w: 290, h: 175, label: "BANCO / CAJERO", roof: "#8f9da4", accent: "#2bd9d5", interactable: true },
-    { id: "taller", x: 4630, y: 2450, w: 360, h: 210, label: "TALLER EL VOLCÁN", roof: "#5f6264", accent: "#ff2f91", interactable: true },
-    { id: "gasolinera", x: 3330, y: 2520, w: 310, h: 185, label: "GASOLINERA", roof: "#c7c2ae", accent: "#44b964", interactable: true },
-    { id: "separos", x: 5300, y: 500, w: 410, h: 265, label: "SEPAROS", roof: "#777d82", accent: "#e54857" },
+    { id: "rifa", x: 3300, y: 1850, w: 175, h: 125, label: "RIFAS EL AFERRADO", roof: "#7f4f96", accent: "#2bd9d5", interactable: true },
+    { id: "empeno", x: 3780, y: 2070, w: 245, h: 145, label: "EMPEÑO VOLCÁN", roof: "#c2a04e", accent: "#e7c447", interactable: true },
+    { id: "marina", x: 4300, y: 650, w: 560, h: 310, label: "LA MARINA SAN FERNANDO", roof: "#5b93c4", accent: "#3e75bb", interactable: true },
+    { id: "banco", x: 4320, y: 1900, w: 290, h: 175, label: "BANCO / CAJERO", roof: "#4f9aa4", accent: "#2bd9d5", interactable: true },
+    { id: "taller", x: 4630, y: 2450, w: 360, h: 210, label: "TALLER EL VOLCÁN", roof: "#a05070", accent: "#ff2f91", interactable: true },
+    { id: "gasolinera", x: 3330, y: 2520, w: 310, h: 185, label: "GASOLINERA", roof: "#4fa05f", accent: "#44b964", interactable: true },
+    { id: "separos", x: 5300, y: 500, w: 410, h: 265, label: "SEPAROS", roof: "#5d6b86", accent: "#e54857" },
     { id: "arrancones", x: 5050, y: 3180, w: 640, h: 220, label: "ARRANCONES TERCER ANILLO", roof: "#343940", accent: "#e7ff1f", track: true },
     { id: "agronomia", x: 5650, y: 3750, w: 520, h: 290, label: "CAMPUS AGRONOMÍA", roof: "#879178", accent: "#6ecb75" },
-    { id: "rochi-home", x: 4750, y: 1450, w: 180, h: 150, label: "CASA DE ROCHI", roof: "#897d6d", accent: "#d7d3c6" },
-    { id: "cbtis19", x: 5140, y: 1250, w: 480, h: 270, label: "CBTIS 19", roof: "#a8a9a2", accent: "#3a7048", interactable: true },
+    { id: "rochi-home", x: 4750, y: 1450, w: 180, h: 150, label: "CASA DE ROCHI", roof: "#7fa8b0", accent: "#d7d3c6" },
+    { id: "cbtis19", x: 5140, y: 1250, w: 480, h: 270, label: "CBTIS 19", roof: "#6f9a72", accent: "#3a7048", interactable: true },
     { id: "fede-lot", x: 910, y: 3110, w: 620, h: 285, label: "LOTE DONDE ‘PRESTARON’ EL SENTRA", roof: "#4d4a45", accent: "#ff2f91", yard: true },
     { id: "corralon", x: 5740, y: 500, w: 500, h: 300, label: "CORRALÓN DE SEPAROS", roof: "#5a5d60", accent: "#e54857", yard: true },
   ];
@@ -315,10 +315,10 @@
   })();
 
   const districts = [
-    { id: "villa-norte", label: "VILLA NORTE", x: 0, y: 0, w: 2520, h: 2580, cellX: 158, cellY: 138, tint: "#7d7769", uses: ["house", "house", "shop", "apartments"] },
-    { id: "centro", label: "CENTRO DE COLIMA", x: 2500, y: 1450, w: 2580, h: 1700, cellX: 166, cellY: 144, tint: "#797266", uses: ["shop", "apartments", "shop", "house"] },
-    { id: "san-fernando", label: "SAN FERNANDO", x: 4020, y: 260, w: 2250, h: 1760, cellX: 170, cellY: 146, tint: "#756f64", uses: ["apartments", "house", "shop", "house"] },
-    { id: "periferia", label: "PERIFERIA · LIBRAMIENTO", x: 80, y: 2900, w: 5000, h: 1220, cellX: 186, cellY: 156, tint: "#746f63", uses: ["workshop", "house", "warehouse", "shop"] },
+    { id: "villa-norte", label: "VILLA NORTE", x: 0, y: 0, w: 2520, h: 2580, cellX: 158, cellY: 138, tint: "#8a8069", uses: ["house", "house", "shop", "apartments"] },
+    { id: "centro", label: "CENTRO DE COLIMA", x: 2500, y: 1450, w: 2580, h: 1700, cellX: 166, cellY: 144, tint: "#877665", uses: ["shop", "apartments", "shop", "house"] },
+    { id: "san-fernando", label: "SAN FERNANDO", x: 4020, y: 260, w: 2250, h: 1760, cellX: 170, cellY: 146, tint: "#7d7b6b", uses: ["apartments", "house", "shop", "house"] },
+    { id: "periferia", label: "PERIFERIA · LIBRAMIENTO", x: 80, y: 2900, w: 5000, h: 1220, cellX: 186, cellY: 156, tint: "#6f6e5c", uses: ["workshop", "house", "warehouse", "shop"] },
   ];
 
   const parkingLots = [
@@ -440,18 +440,25 @@
     return blocks;
   }
 
+  // Se guardan para poder pintarlas: el hueco entre la calle y las casas era
+  // una plancha de tierra plana del color del barrio.
+  const blockRects = cityBlocks();
+
   function generateUrbanBuildings() {
     const generated = [];
+    // Antes todo era beige y gris ratón, y la ciudad se veía lavada. Estas son
+    // las que se ven de verdad en una colonia: rosa mexicano, verde limón,
+    // turquesa, terracota y amarillo.
     const roofSets = {
-      "villa-norte": ["#9c8c78", "#8f8172", "#a99b87", "#7f7d75"],
-      centro: ["#817b73", "#999084", "#756f69", "#a38c72"],
-      "san-fernando": ["#8b8982", "#aaa69c", "#797d7c", "#948776"],
-      periferia: ["#696b68", "#817965", "#5e6567", "#8b735d"],
+      "villa-norte": ["#c98b7a", "#d9b06a", "#8fae8a", "#c9a2ae", "#9fb8c4", "#d7c391", "#b0806e"],
+      centro: ["#c4705f", "#d8a24f", "#7fa4a8", "#b5657e", "#c9b17a", "#8f9c6b", "#a8635a"],
+      "san-fernando": ["#cbb79a", "#9dbcc6", "#c58f8a", "#a9c095", "#d5c07e", "#8fa0b4", "#bfa07f"],
+      periferia: ["#8d8577", "#a8825f", "#7f8f7a", "#9c6f60", "#b09a6d", "#6f8189"],
     };
     const signs = ["ABARROTES", "TACOS", "PAPELERÍA", "LLANTERA", "ESTÉTICA", "REFACCIONES", "COPIAS", "FERRETERÍA"];
     let sequence = 0;
 
-    for (const block of cityBlocks()) {
+    for (const block of blockRects) {
       const centerX = block.x + block.w / 2;
       const centerY = block.y + block.h / 2;
       const district = districts.find((entry) => centerX >= entry.x && centerX <= entry.x + entry.w && centerY >= entry.y && centerY <= entry.y + entry.h)
@@ -629,6 +636,26 @@
   const trafficColors = ["#cc4c48", "#e6c852", "#3e86b8", "#d7d3c6", "#b860a7", "#75a75a", "#e29c42", "#7e65ad", "#4f827c", "#b94a4a"];
   // Se reparte el tráfico entre todas las vialidades existentes en vez de una
   // lista de índices a mano, que apuntaba a calles que ya no existen.
+  // ---------------------------------------------------------------------------
+  // MODELOS DE VEHÍCULO
+  // Todos los carros eran el mismo rectángulo con distinto color. Aquí cada
+  // tipo tiene silueta, proporciones y detalles propios, como en la calle:
+  // el vocho, la combi, el taxi, la pickup y el camión de refrescos.
+  // ---------------------------------------------------------------------------
+  const VEHICLE_MODELS = {
+    sedan:    { w: 30, l: 60, cabin: 0.34, roofAt: 0.30, wheel: 16, name: "sedán" },
+    compacto: { w: 28, l: 52, cabin: 0.38, roofAt: 0.28, wheel: 14, name: "compacto" },
+    vocho:    { w: 28, l: 48, cabin: 0.42, roofAt: 0.26, wheel: 14, name: "vocho", round: true },
+    pickup:   { w: 32, l: 68, cabin: 0.26, roofAt: 0.20, wheel: 17, name: "pickup", bed: true },
+    combi:    { w: 32, l: 66, cabin: 0.5, roofAt: 0.16, wheel: 16, name: "combi", tall: true },
+    taxi:     { w: 30, l: 60, cabin: 0.34, roofAt: 0.30, wheel: 16, name: "taxi", taxi: true },
+    camion:   { w: 38, l: 96, cabin: 0.2, roofAt: 0.12, wheel: 20, name: "camión", box: true },
+    patrulla: { w: 31, l: 62, cabin: 0.32, roofAt: 0.30, wheel: 16, name: "patrulla" },
+    troca:    { w: 34, l: 82, cabin: 0.28, roofAt: 0.22, wheel: 18, name: "troca", bed: true },
+  };
+
+  const CIVIL_MODELS = ["sedan", "compacto", "vocho", "pickup", "combi", "taxi", "sedan", "compacto", "camion"];
+
   const trafficRoads = Array.from({ length: 48 }, (_, index) => index % roads.length);
   const traffic = trafficRoads.map((road, index) => {
     const cruiseSpeed = 0.0105 + (index % 6) * 0.00165;
@@ -639,6 +666,7 @@
       speed: cruiseSpeed,
       cruiseSpeed,
       color: trafficColors[index % trafficColors.length],
+      model: CIVIL_MODELS[index % CIVIL_MODELS.length],
       reverse: index % 3 === 1,
       collisionCooldown: 0,
       braking: false,
@@ -741,12 +769,14 @@
     wantedTimer: 0,
     hurtFlash: 0,
     regenDelay: 0,
+    evading: false,
+    packages: 0,
     shake: 0,
     lastDeathCause: "",
     time: 12 * 60 + 10,
     day: 0,
     player: { x: 1700, y: 1005, angle: -Math.PI / 2, radius: 15, punch: 0, invulnerable: 0, caguamaVisible: 0 },
-    truck: { x: 1840, y: 900, angle: 0, speed: 0, radius: 31, health: 100, fuel: 100, destroyed: false, engine: 0, handling: 0, armor: 0, paint: "#194c38" },
+    truck: { x: 1840, y: 900, angle: 0, speed: 0, radius: 31, health: 100, fuel: 100, destroyed: false, engine: 0, handling: 0, armor: 0, paint: "#194c38", model: "troca" },
     inVehicle: false,
     vehicleKind: "truck",
     stolenCar: null,
@@ -1220,6 +1250,14 @@
     if (!ignoreTruck && !state.inVehicle && state.stolenCar && Math.hypot(x - state.stolenCar.x, y - state.stolenCar.y) < radius + state.stolenCar.radius) return true;
     if (!ignoreTruck && !state.inVehicle && state.story.fedeCar && !state.story.fedeCar.destroyed && Math.hypot(x - state.story.fedeCar.x, y - state.story.fedeCar.y) < radius + state.story.fedeCar.radius) return true;
     if (!ignoreTruck && !state.inVehicle && state.story.bike && !state.story.bike.destroyed && Math.hypot(x - state.story.bike.x, y - state.story.bike.y) < radius + state.story.bike.radius) return true;
+    // Los carros del tráfico no estaban en la colisión: Eve los atravesaba
+    // como si fueran calcomanías del piso.
+    if (!ignoreTruck && !state.inVehicle) {
+      for (const car of traffic) {
+        if (car.stolen || car.hidden || !Number.isFinite(car.x)) continue;
+        if (Math.hypot(x - car.x, y - car.y) < radius + 24) return true;
+      }
+    }
     return false;
   }
 
@@ -1327,6 +1365,101 @@
   // permite derrapar, contravolantear y sentir el peso del carro.
   // ---------------------------------------------------------------------------
   const skidMarks = [];
+
+  // ---------------------------------------------------------------------------
+  // PAQUETES ESCONDIDOS
+  // No había ninguna razón para meterse por la ciudad: manejabas de un objetivo
+  // al siguiente y lo de en medio daba igual. Estos son 40 bultos repartidos en
+  // callejones, azoteas de un piso y rincones, con premio cada diez.
+  // ---------------------------------------------------------------------------
+  const HIDDEN_PACKAGE_TOTAL = 40;
+
+  const hiddenPackages = (() => {
+    const list = [];
+    let attempts = 0;
+    while (list.length < HIDDEN_PACKAGE_TOTAL && attempts < 4000) {
+      attempts += 1;
+      const seed = attempts * 37;
+      const x = 200 + seededValue(seed) * (WORLD.width - 400);
+      const y = 200 + seededValue(seed + 1) * (WORLD.height - 400);
+      // Escondido de verdad: fuera del asfalto pero alcanzable a pie.
+      if (pointOnRoad(x, y, 26)) continue;
+      if (cityBlocked(x, y, 20, true)) continue;
+      if (inProtectedLandscape(x, y, 20)) continue;
+      if (list.some((entry) => Math.hypot(entry.x - x, entry.y - y) < 420)) continue;
+      list.push({ x: Math.round(x), y: Math.round(y), taken: false });
+    }
+    return list;
+  })();
+
+  function packagesFound() {
+    return hiddenPackages.filter((entry) => entry.taken).length;
+  }
+
+  function updateHiddenPackages() {
+    if (state.scene !== "city" || state.inVehicle) return;
+    for (const bundle of hiddenPackages) {
+      if (bundle.taken) continue;
+      if (distance(state.player, bundle) > 42) continue;
+      bundle.taken = true;
+      state.packages = packagesFound();
+      state.money += 120;
+      sound("pickup");
+      impactParticles(bundle.x, bundle.y, palette.acid);
+      const total = state.packages;
+      // Premio cada diez, para que valga la pena seguir buscando.
+      if (total % 10 === 0) {
+        if (total === 10) {
+          state.armor = 100;
+          showHint(`PAQUETE ${total}/${HIDDEN_PACKAGE_TOTAL} · blindaje completo`, 2600);
+        } else if (total === 20) {
+          grantWeapon("pistol", 24);
+          showHint(`PAQUETE ${total}/${HIDDEN_PACKAGE_TOTAL} · pistola con parque`, 2600);
+        } else if (total === 30) {
+          state.truck.engine = clamp(state.truck.engine + 1, 0, 3);
+          state.truck.handling = clamp(state.truck.handling + 1, 0, 3);
+          showHint(`PAQUETE ${total}/${HIDDEN_PACKAGE_TOTAL} · la troca quedó más perra`, 2600);
+        } else {
+          state.money += 5000;
+          grantWeapon("smg", 60);
+          showHint(`PAQUETE ${total}/${HIDDEN_PACKAGE_TOTAL} · los encontraste todos: $5,000 y metralleta`, 3400);
+          addNews("Alguien anda vaciando los escondites de media Colima. Nadie sospecha de Eve.");
+        }
+        sound("phone");
+      } else {
+        showHint(`Paquete escondido ${total}/${HIDDEN_PACKAGE_TOTAL} · $120`, 1500);
+      }
+      saveGame();
+      return;
+    }
+  }
+
+  function drawHiddenPackages() {
+    const focus = getFocus();
+    for (const bundle of hiddenPackages) {
+      if (bundle.taken || !visiblePoint(bundle, 60)) continue;
+      // Solo brillan de cerca: si se vieran desde lejos no habría que buscar.
+      const near = distance(focus, bundle) < 340;
+      const bob = Math.round(Math.sin(performance.now() / 320 + bundle.x) * 3);
+      ctx.save();
+      ctx.translate(px(bundle.x), px(bundle.y + bob));
+      ctx.fillStyle = "rgba(6,8,12,.4)";
+      ctx.fillRect(-9, 7, 20, 5);
+      bevelRect(-10, -9, 20, 17, "#9a7645", "#c09a5f", "#6a4f2c", 2);
+      ctx.fillStyle = "#c8b070";
+      ctx.fillRect(-10, -3, 20, 4);
+      ctx.fillRect(-2, -9, 4, 17);
+      outlineRect(-10, -9, 20, 17, palette.outline, 2);
+      if (near) {
+        ctx.globalAlpha = 0.35 + Math.sin(performance.now() / 240) * 0.2;
+        ctx.fillStyle = palette.acid;
+        ctx.fillRect(-13, -12, 26, 3);
+        ctx.globalAlpha = 1;
+      }
+      ctx.restore();
+    }
+  }
+
 
   function pushSkid(vehicle, strength) {
     const heading = vehicle.angle - Math.PI / 2;
@@ -1865,6 +1998,35 @@
       placeTrafficCar(car);
       if (!car.hidden) collideWithTraffic(car);
     }
+    separateTraffic();
+  }
+
+  // Los carros solo miraban al de adelante de su MISMA calle y sentido. En un
+  // cruce se juntan cuatro calles, así que se encimaban en un montón. Esto los
+  // empuja para que nunca queden uno sobre otro.
+  function separateTraffic() {
+    for (let i = 0; i < traffic.length; i += 1) {
+      const a = traffic[i];
+      if (a.stolen || a.hidden || !Number.isFinite(a.x)) continue;
+      for (let j = i + 1; j < traffic.length; j += 1) {
+        const b = traffic[j];
+        if (b.stolen || b.hidden || !Number.isFinite(b.x)) continue;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const gap = Math.hypot(dx, dy);
+        if (gap >= 54 || gap === 0) continue;
+        const push = (54 - gap) / 2;
+        const nx = dx / gap;
+        const ny = dy / gap;
+        a.x -= nx * push;
+        a.y -= ny * push;
+        b.x += nx * push;
+        b.y += ny * push;
+        // El de atrás cede el paso en vez de empujar eternamente.
+        if (a.speed > b.speed) a.speed *= 0.7;
+        else b.speed *= 0.7;
+      }
+    }
   }
 
   function axisAngleDifference(a, b) {
@@ -1883,7 +2045,7 @@
       const dy = crossing.y - position.y;
       const ahead = dx * hx + dy * hy;
       const lateral = Math.abs(dx * -hy + dy * hx);
-      if (ahead < 26 || ahead > 118 || lateral > 58) continue;
+      if (ahead < 24 || ahead > 82 || lateral > 46) continue;
       const usesA = axisAngleDifference(heading, crossing.angleA) <= axisAngleDifference(heading, crossing.angleB);
       const green = usesA ? cycle === crossing.phase : cycle !== crossing.phase;
       if (!green) return true;
@@ -2000,7 +2162,13 @@
     const focus = getFocus();
     const skill = policeSkill();
     const targetUnits = state.wanted === 5 ? 6 : Math.max(1, state.wanted);
-    while (policeUnits.length < targetUnits) spawnPoliceUnit(focus);
+    // Mientras estés evadiendo no se generan unidades nuevas. Antes aparecían
+    // a 480-920 de distancia y el decaimiento exigía que la más cercana
+    // estuviera a más de 780, así que una patrulla recién aparecida reiniciaba
+    // el contador para siempre: perder una estrella era imposible.
+    if (!state.evading) {
+      while (policeUnits.length < targetUnits) spawnPoliceUnit(focus);
+    }
     while (policeUnits.length > targetUnits) policeUnits.pop();
 
     let closest = Infinity;
@@ -2059,8 +2227,12 @@
       }
 
       // Atropellón: pega y avienta, NO arresta.
-      if (dist < 34) {
-        const impact = clamp(unitSpeed / 26, 2, 10);
+      // El atropellón hacía daño en cada cuadro: a 60 fps eran hasta 600 de
+      // daño por segundo y morías en menos de un segundo de tocarte.
+      unit.ramCooldown = Math.max(0, (unit.ramCooldown || 0) - dt);
+      if (dist < 34 && unit.ramCooldown <= 0) {
+        unit.ramCooldown = 1.2;
+        const impact = clamp(unitSpeed / 34, 2, 7);
         damageEve(impact, "patrulla");
         const push = state.inVehicle ? activeVehicle() : state.player;
         const away = Math.atan2(push.y - unit.y, push.x - unit.x);
@@ -2084,21 +2256,43 @@
 
     updatePoliceOfficers(dt);
 
+    // Estás evadiendo cuando ninguna unidad te ve ni te tiene cerca. Es lo que
+    // hace que esconderse funcione.
+    let spotted = false;
+    for (const unit of policeUnits) {
+      if (unit.status === "dead") continue;
+      const seen = distance(focus, unit) < 520 && !lineOfSightBlocked(unit.x, unit.y, focus.x, focus.y, 6);
+      if (seen || distance(focus, unit) < 260) { spotted = true; break; }
+    }
+    if (!spotted) {
+      for (const cop of policeOfficers) {
+        if (cop.status !== "active") continue;
+        if (distance(focus, cop) < 420 && !lineOfSightBlocked(cop.x, cop.y, focus.x, focus.y, 6)) { spotted = true; break; }
+      }
+    }
+    state.evading = !spotted;
+
     if (state.wanted === 5) {
       state.wantedTimer = 30;
       showFiveStarNews();
-    } else if (closest > 780) {
+      state.evading = false;
+    } else if (state.evading) {
       state.wantedTimer -= dt;
+      // Cuanto más lejos, más rápido se enfría.
+      if (closest > 900) state.wantedTimer -= dt * 1.4;
       if (state.wantedTimer <= 0) {
         state.wanted -= 1;
-        state.wantedTimer = state.wanted > 0 ? 14 : 0;
+        state.wantedTimer = state.wanted > 0 ? 11 : 0;
+        showHint(state.wanted > 0 ? `Bajaste a ${state.wanted} ${state.wanted === 1 ? "estrella" : "estrellas"}` : "Los perdiste", 1500);
         if (state.wanted === 0) {
           policeUnits.length = 0;
+          policeOfficers.length = 0;
+          roadblocks.length = 0;
           addNews("La policía perdió a Eve. Dicen que casi la tenían, cómo no.");
         }
       }
     } else {
-      state.wantedTimer = Math.max(state.wantedTimer, 8);
+      state.wantedTimer = Math.max(state.wantedTimer, 9);
     }
 
     const requiredBlocks = state.wanted >= 5 ? 3 : state.wanted >= 4 ? 1 : 0;
@@ -2107,7 +2301,7 @@
     updateRoadblocks();
   }
 
-  function roadSpawnNear(focus, minimum = 480, maximum = 920) {
+  function roadSpawnNear(focus, minimum = 760, maximum = 1500) {
     let best = null;
     let bestScore = Infinity;
     for (let attempt = 0; attempt < 42; attempt += 1) {
@@ -2135,6 +2329,7 @@
       health: 100,
       status: "active",
       police: true,
+      model: "patrulla",
       cash: 0,
       dropped: false,
       deployed: false,
@@ -3182,6 +3377,7 @@
       fuel: 45 + Math.random() * 40,
       destroyed: false,
       color: found.car.color,
+      model: found.car.model || "sedan",
     };
     enterVehicle("stolen");
     raiseWanted(1, "Robo de vehículo");
@@ -3615,6 +3811,7 @@
         finishTime: 0,
         // Cada quien corre distinto: el más lento se puede rebasar, el más
         // rápido te obliga a usar el freno de mano en las curvas.
+        model: ["compacto", "sedan", "vocho", "pickup"][i],
         topSpeed: 236 + i * 21 + Math.random() * 16,
         skill: 0.72 + i * 0.06,
       });
@@ -4704,6 +4901,24 @@
     strokePath(river, 22, palette.waterLight);
     strokePath(river, 8, "rgba(226,252,255,.4)");
 
+    // Banqueta perimetral de cada manzana, con guarnición y losetas.
+    const bounds = viewportBounds(160);
+    for (const block of blockRects) {
+      if (block.x + block.w < bounds.left || block.x > bounds.right
+        || block.y + block.h < bounds.top || block.y > bounds.bottom) continue;
+      const pad = 16;
+      ctx.fillStyle = "#8f8878";
+      ctx.fillRect(px(block.x - pad), px(block.y - pad), px(block.w + pad * 2), px(block.h + pad * 2));
+      ctx.fillStyle = "#a39b88";
+      ctx.fillRect(px(block.x - pad), px(block.y - pad), px(block.w + pad * 2), 4);
+      ctx.fillStyle = "#7a7466";
+      ctx.fillRect(px(block.x - pad), px(block.y + block.h + pad - 4), px(block.w + pad * 2), 4);
+      // Losetas.
+      ctx.fillStyle = "rgba(90,84,72,.4)";
+      for (let x = block.x - pad; x < block.x + block.w + pad; x += 26) ctx.fillRect(px(x), px(block.y - pad), 1, px(block.h + pad * 2));
+      for (let y = block.y - pad; y < block.y + block.h + pad; y += 26) ctx.fillRect(px(block.x - pad), px(y), px(block.w + pad * 2), 1);
+    }
+
     for (const lot of parkingLots) drawParkingLot(lot);
     for (const road of residentialRoads) drawRoad(road, true);
     for (const road of roads) drawRoad(road, false);
@@ -4887,9 +5102,62 @@
       ctx.fillRect(px(building.x + 9), px(building.y + 6), 16, 6);
       ctx.fillRect(px(building.x + 31), px(building.y + 6), 16, 6);
     }
+    drawFacade(building);
     drawRoofEquipment(building);
     outlineRect(building.x, building.y, building.w, building.h, palette.outline, 2);
     ctx.restore();
+  }
+
+  // Frente de la casa: puerta, marco, balcón y macetas. Es lo que hace que un
+  // bloque de color se lea como una casa donde vive alguien.
+  function drawFacade(building) {
+    const seed = building.detailSeed || idSeed(building.id || "f");
+    const w = building.w;
+    const h = building.h;
+    if (w < 46 || h < 40) return;
+    const baseY = building.y + h - 4;
+
+    // Puerta al frente, del lado de la calle.
+    const doorW = clamp(Math.round(w * 0.2), 12, 26);
+    const doorX = building.x + w * (0.22 + seededValue(seed + 60) * 0.5);
+    ctx.fillStyle = "#3b2d24";
+    ctx.fillRect(px(doorX), px(baseY - 12), doorW, 14);
+    ctx.fillStyle = shade(building.roof, -44);
+    ctx.fillRect(px(doorX - 2), px(baseY - 14), doorW + 4, 3);
+    ctx.fillStyle = "#d8c98f";
+    ctx.fillRect(px(doorX + doorW - 5), px(baseY - 7), 2, 2);
+
+    // Toldo o marquesina de color.
+    if (seededValue(seed + 62) > 0.45) {
+      const awning = ["#c8433f", "#3f8a86", "#c9973c", "#5b7f4a"][Math.floor(seededValue(seed + 63) * 4)];
+      ctx.fillStyle = awning;
+      ctx.fillRect(px(doorX - 6), px(baseY - 20), doorW + 12, 7);
+      ctx.fillStyle = "rgba(255,255,255,.45)";
+      for (let x = doorX - 6; x < doorX + doorW + 6; x += 8) ctx.fillRect(px(x), px(baseY - 20), 4, 7);
+      ctx.fillStyle = "rgba(0,0,0,.3)";
+      ctx.fillRect(px(doorX - 6), px(baseY - 13), doorW + 12, 2);
+    }
+
+    // Barandal de balcón en las de dos pisos.
+    if ((building.floors || 1) > 1 && w > 70) {
+      const by = building.y + Math.round(h * 0.42);
+      ctx.fillStyle = shade(building.roof, -34);
+      ctx.fillRect(px(building.x + 8), px(by), px(w - 16), 3);
+      ctx.fillStyle = shade(building.roof, -22);
+      for (let x = building.x + 10; x < building.x + w - 10; x += 7) ctx.fillRect(px(x), px(by - 5), 2, 6);
+    }
+
+    // Macetas junto a la puerta.
+    if (seededValue(seed + 65) > 0.5) {
+      for (const side of [-1, 1]) {
+        const mx = doorX + (side < 0 ? -10 : doorW + 4);
+        if (mx < building.x + 3 || mx > building.x + w - 8) continue;
+        ctx.fillStyle = "#8a5a3e";
+        ctx.fillRect(px(mx), px(baseY - 7), 6, 7);
+        ctx.fillStyle = "#4f8a52";
+        ctx.fillRect(px(mx - 1), px(baseY - 12), 8, 6);
+      }
+    }
   }
 
   function drawBusStop(stop) {
@@ -4951,7 +5219,7 @@
   // ---------------------------------------------------------------------------
   const streetProps = (() => {
     const list = [];
-    const kinds = ["puesto", "bote", "carro", "tope", "barda", "tienda", "banca", "poste"];
+    const kinds = ["puesto", "bote", "carro", "tope", "barda", "tienda", "banca", "poste", "palmera", "palmera", "jardinera"];
     for (const road of roads) {
       const steps = Math.max(6, road.points.length * 5);
       for (let i = 1; i < steps; i += 1) {
@@ -5070,6 +5338,46 @@
         ctx.fillStyle = "#2f7f86";
         ctx.fillRect(2, -5, 11, 14);
         outlineRect(-18, -14, 34, 26, palette.outline, 2);
+        break;
+      }
+      case "palmera": {
+        // Palmera vista desde arriba: tronco al centro y hojas en aspa.
+        ctx.fillStyle = "rgba(6,8,12,.34)";
+        ctx.fillRect(-14, -12, 34, 34);
+        const frond = ["#3f7a44", "#4d8a4f", "#356b3c"][Math.floor(seededValue(s + 12) * 3)];
+        ctx.fillStyle = frond;
+        for (let i = 0; i < 6; i += 1) {
+          const a = (i / 6) * TAU + seededValue(s + 13);
+          ctx.save();
+          ctx.rotate(a);
+          ctx.fillRect(4, -3, 16, 6);
+          ctx.fillRect(16, -2, 6, 4);
+          ctx.restore();
+        }
+        ctx.fillStyle = shade(frond, 26);
+        for (let i = 0; i < 3; i += 1) {
+          const a = (i / 3) * TAU + 0.6;
+          ctx.save();
+          ctx.rotate(a);
+          ctx.fillRect(5, -2, 11, 4);
+          ctx.restore();
+        }
+        ctx.fillStyle = "#6b5133";
+        ctx.fillRect(-4, -4, 9, 9);
+        ctx.fillStyle = "#8a6a44";
+        ctx.fillRect(-4, -4, 9, 3);
+        break;
+      }
+      case "jardinera": {
+        // Jardinera de concreto con arbustos.
+        const w = 34 + seededValue(s + 14) * 26;
+        ctx.fillStyle = "rgba(6,8,12,.34)";
+        ctx.fillRect(px(-w / 2 + 3), -8, px(w), 22);
+        bevelRect(-w / 2, -11, w, 22, "#a8a08c", "#c2baa4", "#7d7768", 2);
+        ctx.fillStyle = "#4a7a4d";
+        for (let x = -w / 2 + 4; x < w / 2 - 6; x += 11) ctx.fillRect(px(x), -7, 9, 14);
+        ctx.fillStyle = "#5f9460";
+        for (let x = -w / 2 + 5; x < w / 2 - 8; x += 11) ctx.fillRect(px(x), -7, 5, 6);
         break;
       }
       case "banca": {
@@ -5448,6 +5756,27 @@
     queueWorldLabel(x, y, copy.toUpperCase(), { scale: 1, color: "#f1eddf", plate: "rgba(9,12,16,.88)", range: 0 });
   }
 
+
+  function modelFor(vehicle, fallback = "sedan") {
+    if (vehicle.model && VEHICLE_MODELS[vehicle.model]) return VEHICLE_MODELS[vehicle.model];
+    return VEHICLE_MODELS[fallback] || VEHICLE_MODELS.sedan;
+  }
+
+  function drawWheels(model, length) {
+    ctx.fillStyle = "#0d1014";
+    const half = model.w / 2;
+    const wheelH = model.wheel;
+    for (const along of [-length * 0.31, length * 0.22]) {
+      ctx.fillRect(px(-half - 4), px(along), 6, wheelH);
+      ctx.fillRect(px(half - 2), px(along), 6, wheelH);
+    }
+    ctx.fillStyle = "#242a30";
+    for (const along of [-length * 0.31, length * 0.22]) {
+      ctx.fillRect(px(-half - 4), px(along + 2), 6, 3);
+      ctx.fillRect(px(half - 2), px(along + 2), 6, 3);
+    }
+  }
+
   function drawVehicle(vehicle, options = {}) {
     const { police = false, color = "#1f513f", small = false } = options;
     const paint = vehicle.destroyed ? "#3b3b3a" : police ? "#e4e6e2" : (vehicle.paint || color);
@@ -5475,61 +5804,98 @@
       return;
     }
 
-    const width = small ? 30 : 46;
-    const length = small ? 58 : 86;
+    const model = modelFor(vehicle, police ? "patrulla" : small ? "sedan" : "troca");
+    const width = model.w;
+    const length = model.l;
+    const half = width / 2;
+
     ctx.save();
     ctx.translate(px(vehicle.x), px(vehicle.y));
     ctx.rotate(vehicle.angle || 0);
 
-    // Sombra debajo del carro.
     ctx.fillStyle = "rgba(6,8,12,.42)";
-    ctx.fillRect(px(-width / 2 + 5), px(-length / 2 + 6), px(width), px(length));
+    ctx.fillRect(px(-half + 5), px(-length / 2 + 6), px(width), px(length));
 
-    // Llantas.
-    ctx.fillStyle = "#101318";
-    ctx.fillRect(px(-width / 2 - 4), px(-length * 0.34), 6, 19);
-    ctx.fillRect(px(width / 2 - 2), px(-length * 0.34), 6, 19);
-    ctx.fillRect(px(-width / 2 - 4), px(length * 0.16), 6, 19);
-    ctx.fillRect(px(width / 2 - 2), px(length * 0.16), 6, 19);
+    drawWheels(model, length);
 
-    // Carrocería con bisel: cofre, cabina y cajuela diferenciados.
-    bevelRect(-width / 2, -length / 2, width, length, paint, shade(paint, 32), shade(paint, -38), 2);
-    ctx.fillStyle = shade(paint, -14);
-    ctx.fillRect(px(-width / 2 + 3), px(-length / 2 + 4), px(width - 6), px(length * 0.2));
-    ctx.fillRect(px(-width / 2 + 3), px(length / 2 - length * 0.22), px(width - 6), px(length * 0.18));
+    // Carrocería. El vocho y la combi llevan las esquinas recortadas para que
+    // la silueta se reconozca desde arriba.
+    bevelRect(-half, -length / 2, width, length, paint, shade(paint, 32), shade(paint, -38), 2);
+    if (model.round) {
+      ctx.fillStyle = palette.asphalt;
+      ctx.fillRect(px(-half), px(-length / 2), 3, 3);
+      ctx.fillRect(px(half - 3), px(-length / 2), 3, 3);
+      ctx.fillRect(px(-half), px(length / 2 - 3), 3, 3);
+      ctx.fillRect(px(half - 3), px(length / 2 - 3), 3, 3);
+    }
 
-    // Parabrisas y medallón.
-    ctx.fillStyle = "#131c22";
-    ctx.fillRect(px(-width / 2 + 5), px(-length / 2 + 15), px(width - 10), px(length * 0.22));
-    ctx.fillStyle = "#3f6b79";
-    ctx.fillRect(px(-width / 2 + 6), px(-length / 2 + 16), px(width - 12), px(length * 0.13));
-    ctx.fillStyle = "rgba(190,232,240,.35)";
-    ctx.fillRect(px(-width / 2 + 6), px(-length / 2 + 16), px(width * 0.35), 3);
-    ctx.fillStyle = "#131c22";
-    ctx.fillRect(px(-width / 2 + 6), px(length / 2 - length * 0.2), px(width - 12), px(length * 0.11));
+    // Cofre y cajuela más oscuros que el techo.
+    ctx.fillStyle = shade(paint, -16);
+    ctx.fillRect(px(-half + 3), px(-length / 2 + 3), px(width - 6), px(length * model.roofAt * 0.55));
+    if (!model.bed && !model.box) {
+      ctx.fillStyle = shade(paint, -16);
+      ctx.fillRect(px(-half + 3), px(length / 2 - length * 0.19), px(width - 6), px(length * 0.15));
+    }
 
-    // Techo con brillo.
-    ctx.fillStyle = shade(paint, 16);
-    ctx.fillRect(px(-width / 2 + 4), px(-length * 0.06), px(width - 8), px(length * 0.16));
+    // Cabina.
+    const cabinTop = -length / 2 + length * model.roofAt;
+    const cabinLen = length * model.cabin;
+    ctx.fillStyle = "#121a20";
+    ctx.fillRect(px(-half + 4), px(cabinTop), px(width - 8), px(cabinLen));
+    ctx.fillStyle = model.tall ? "#5a8a99" : "#3f6b79";
+    ctx.fillRect(px(-half + 5), px(cabinTop + 2), px(width - 10), px(cabinLen * 0.42));
+    ctx.fillStyle = "rgba(198,238,246,.4)";
+    ctx.fillRect(px(-half + 5), px(cabinTop + 2), px(width * 0.34), 3);
+    ctx.fillStyle = model.tall ? "#5a8a99" : "#3f6b79";
+    ctx.fillRect(px(-half + 5), px(cabinTop + cabinLen * 0.6), px(width - 10), px(cabinLen * 0.3));
+    // Techo entre parabrisas y medallón.
+    ctx.fillStyle = shade(paint, 18);
+    ctx.fillRect(px(-half + 4), px(cabinTop + cabinLen * 0.44), px(width - 8), px(cabinLen * 0.14));
 
-    if (!small) {
-      // Caja de la troca.
+    if (model.bed) {
+      // Caja de la pickup con tablones.
+      const bedTop = cabinTop + cabinLen + 3;
+      const bedLen = length / 2 - bedTop - 3;
       ctx.fillStyle = "#8d7a5c";
-      ctx.fillRect(px(-width / 2 + 3), px(12), px(width - 6), px(length / 2 - 15));
+      ctx.fillRect(px(-half + 3), px(bedTop), px(width - 6), px(bedLen));
       ctx.fillStyle = "#6e5d43";
-      for (let y = 14; y < length / 2 - 4; y += 8) ctx.fillRect(px(-width / 2 + 3), px(y), px(width - 6), 2);
+      for (let y = bedTop + 2; y < bedTop + bedLen; y += 7) ctx.fillRect(px(-half + 3), px(y), px(width - 6), 2);
+      ctx.fillStyle = shade(paint, -26);
+      ctx.fillRect(px(-half + 1), px(bedTop - 2), 3, px(bedLen + 4));
+      ctx.fillRect(px(half - 4), px(bedTop - 2), 3, px(bedLen + 4));
+    }
+
+    if (model.box) {
+      // Caja del camión, con puerta trasera y franja.
+      const boxTop = cabinTop + cabinLen + 4;
+      const boxLen = length / 2 - boxTop - 2;
+      bevelRect(-half - 2, boxTop, width + 4, boxLen, "#d6d1c2", "#efeade", "#94907f", 2);
+      ctx.fillStyle = vehicle.paint || color;
+      ctx.fillRect(px(-half - 2), px(boxTop + boxLen * 0.36), px(width + 4), px(boxLen * 0.2));
+      ctx.fillStyle = "#8e8a7c";
+      ctx.fillRect(px(-half + 2), px(boxTop + boxLen - 7), px(width - 4), 6);
+      outlineRect(-half - 2, boxTop, width + 4, boxLen, palette.outline, 2);
+    }
+
+    if (model.taxi) {
+      // Cajita de taxi en el techo y franja lateral.
+      ctx.fillStyle = "#1b1f24";
+      ctx.fillRect(px(-7), px(cabinTop + cabinLen * 0.4), 15, 8);
+      ctx.fillStyle = "#f0e27a";
+      ctx.fillRect(px(-6), px(cabinTop + cabinLen * 0.4 + 1), 13, 5);
+      ctx.fillStyle = "#1b1f24";
+      ctx.fillRect(px(-half), px(-length * 0.04), px(width), 5);
     }
 
     // Faros y calaveras.
     ctx.fillStyle = police ? "#cfe3f2" : "#efdf83";
-    ctx.fillRect(px(-width / 2 + 4), px(-length / 2 - 1), 9, 5);
-    ctx.fillRect(px(width / 2 - 13), px(-length / 2 - 1), 9, 5);
+    ctx.fillRect(px(-half + 3), px(-length / 2 - 1), 8, 5);
+    ctx.fillRect(px(half - 11), px(-length / 2 - 1), 8, 5);
     ctx.fillStyle = "#b8353f";
-    ctx.fillRect(px(-width / 2 + 4), px(length / 2 - 4), 9, 5);
-    ctx.fillRect(px(width / 2 - 13), px(length / 2 - 4), 9, 5);
+    ctx.fillRect(px(-half + 3), px(length / 2 - 4), 8, 5);
+    ctx.fillRect(px(half - 11), px(length / 2 - 4), 8, 5);
 
     if (police) {
-      // Torreta que alterna azul y rojo de verdad.
       const flash = Math.floor(performance.now() / 130) % 2;
       ctx.fillStyle = "#1a1d22";
       ctx.fillRect(-15, -5, 30, 9);
@@ -5537,18 +5903,17 @@
       ctx.fillRect(-14, -4, 13, 7);
       ctx.fillStyle = flash ? "#2a4a6e" : "#3f9dff";
       ctx.fillRect(1, -4, 13, 7);
-      // Franja lateral.
       ctx.fillStyle = "#1e3f6b";
-      ctx.fillRect(px(-width / 2), px(-length * 0.05), px(width), 5);
+      ctx.fillRect(px(-half), px(-length * 0.05), px(width), 5);
     }
 
-    outlineRect(-width / 2, -length / 2, width, length, palette.outline, 2);
+    outlineRect(-half, -length / 2, width, length, palette.outline, 2);
 
     if (vehicle.destroyed) {
       ctx.fillStyle = "rgba(20,22,26,.6)";
-      ctx.fillRect(px(-width / 2), px(-length / 2), px(width), px(length));
+      ctx.fillRect(px(-half), px(-length / 2), px(width), px(length));
       ctx.fillStyle = "#d3513f";
-      ctx.fillRect(px(-width / 2 + 4), px(-4), px(width - 8), 3);
+      ctx.fillRect(px(-half + 4), px(-4), px(width - 8), 3);
       ctx.fillRect(px(-3), px(-length / 2 + 6), 4, px(length - 12));
     }
     ctx.restore();
@@ -5849,6 +6214,7 @@
       if (visiblePoint(officer, 80)) drawPerson(officer);
     }
     drawPickups();
+    drawHiddenPackages();
     if (visiblePoint(state.truck, 120)) drawVehicle(state.truck, { color: state.truck.paint });
     if (state.stolenCar && visiblePoint(state.stolenCar, 100)) drawVehicle(state.stolenCar, { color: state.stolenCar.color, small: true });
     if (state.story.fedeCar && visiblePoint(state.story.fedeCar, 100)) drawVehicle(state.story.fedeCar, { color: state.story.fedeCar.color, small: true });
@@ -6287,6 +6653,7 @@
     updateStory(dt);
     updateEveVitals(dt);
     updateSkidMarks(dt);
+    updateHiddenPackages();
     recoverEve();
     updateParticles(dt);
     updateProjectiles(dt);
@@ -6326,6 +6693,7 @@
       bank: state.bank,
       health: state.health,
       armor: state.armor,
+      packages: hiddenPackages.map((entry) => (entry.taken ? 1 : 0)),
       energy: state.energy,
       time: state.time,
       day: state.day,
@@ -6418,6 +6786,12 @@
       state.bank = Math.max(0, Number(data.bank) || 0);
       state.health = clamp(Number(data.health) || 100, 0, 100);
       state.armor = clamp(Number(data.armor) || 0, 0, 100);
+      if (Array.isArray(data.packages)) {
+        data.packages.forEach((flag, index) => {
+          if (hiddenPackages[index]) hiddenPackages[index].taken = Boolean(flag);
+        });
+        state.packages = packagesFound();
+      }
       state.energy = clamp(Number(data.energy) || 100, 0, 100);
       state.time = Number.isFinite(Number(data.time)) ? Number(data.time) : 12 * 60 + 10;
       state.day = Math.max(0, Number(data.day) || 0);
@@ -6597,7 +6971,7 @@
     } else if (app === "bank") {
       view.innerHTML = `<strong>Banco</strong><div class="inventory-row"><span>Saldo protegido</span><b>$${Math.floor(state.bank)}</b></div><div class="inventory-row"><span>Efectivo expuesto</span><b>$${Math.floor(state.money)}</b></div><p>Retira dinero únicamente en un cajero del mapa. Toda compra exige efectivo.</p><p class="muted">Separos quita la mitad del efectivo; el banco no se toca.</p>`;
     } else if (app === "news") {
-      view.innerHTML = `<strong>Colima Noticias Más o Menos</strong>${state.news.map((item) => `<div class="news-item">${item}</div>`).join("")}`;
+      view.innerHTML = `<strong>Paquetes escondidos</strong><div class="inventory-row"><span>Encontrados</span><b>${packagesFound()} / ${HIDDEN_PACKAGE_TOTAL}</b></div><p class="muted">Están fuera de la calle: callejones, patios y rincones. Brillan cuando andas cerca. Cada diez hay premio.</p><strong>Colima Noticias Más o Menos</strong>${state.news.map((item) => `<div class="news-item">${item}</div>`).join("")}`;
     } else if (app === "camera") {
       view.innerHTML = '<strong>Cámara</strong><p>La cámara solo guarda una captura del juego. No abre misiones ni vigila NPC.</p><button data-phone-action="camera">Guardar captura PNG</button>';
     } else if (app === "radio") {
@@ -7041,6 +7415,7 @@
       raceRoute,
       racers,
       skidMarks,
+      hiddenPackages,
       input,
       pointOnRoad,
       rectTouchesRoad,

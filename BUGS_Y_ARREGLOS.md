@@ -536,3 +536,136 @@ encima de otro y se atoraban en fila.
 
 **Cómo quedó.** Antes de soltar un carro se revisa que no haya otro a menos de
 96 de distancia, y la densidad bajó de 64 a 48 vehículos.
+
+---
+
+# Cuarta ronda: lo que reportaste jugando
+
+---
+
+## 32. El atropellón de la patrulla te mataba en menos de un segundo
+
+**Este lo metí yo en la primera ronda y es el peor de todos.**
+
+**Qué pasaba.** Al quitar el arresto instantáneo lo cambié por un atropellón
+que hace daño. Pero lo puse **sin enfriamiento**: `damageEve()` corría en
+**cada cuadro** mientras la patrulla estuviera a menos de 34 unidades. A 60
+cuadros por segundo eso son hasta **600 de daño por segundo**. Con 100 de vida
+te mueres en menos de un segundo de que te rocen.
+
+Por eso sentías que "te matan en dos balazos": no eran balazos, era el roce.
+
+**Cómo quedó.** Enfriamiento de 1.2 segundos por unidad y el daño bajó de un
+máximo de 10 a 7. Un segundo pegado a una patrulla ahora cuesta unos 7 de vida,
+no los 100.
+
+Hay una prueba de regresión que deja a Eve pegada a una patrulla un segundo
+completo y falla si pierde más del 12% de vida.
+
+---
+
+## 33. Bajar de una estrella era imposible
+
+**Qué pasaba.** Con una sola estrella, la más fácil, no había forma de
+perderla. El contador nunca corría.
+
+**Por qué.** Dos números que se peleaban entre sí:
+
+- `spawnPoliceUnit()` hacía aparecer patrullas a **480-920** de distancia.
+- El decaimiento solo corría si la patrulla más cercana estaba a **más de 780**.
+
+O sea que el juego generaba patrullas *dentro* del radio que impide enfriarse.
+En cuanto una se alejaba, nacía otra a 500 y el contador se reiniciaba. Para
+siempre.
+
+**Cómo quedó.**
+
+- Las patrullas nuevas aparecen a 760-1500, fuera del radio de evasión.
+- **Mientras estés evadiendo no se generan unidades nuevas.**
+- "Evadir" ahora significa algo concreto: que ninguna patrulla te vea (línea de
+  vista libre a menos de 520) ni te tenga encima (menos de 260), y ningún
+  policía a pie te vea a menos de 420. Esconderse por fin sirve.
+- Cuanto más lejos, más rápido se enfría, y te avisa al bajar de estrella.
+
+Prueba de regresión: cuarenta segundos evadiendo sin una patrulla cerca tienen
+que dejar el nivel en cero.
+
+---
+
+## 34. Eve atravesaba los carros
+
+**Qué pasaba.** Los 48 carros del tráfico eran decoración: se podía caminar a
+través de ellos.
+
+**Por qué.** `cityBlocked()` revisaba edificios y los vehículos *de Eve* (su
+troca, el robado, el de Fede, la moto), pero nunca el arreglo `traffic`.
+
+**Cómo quedó.** Los carros del tráfico entran en la colisión cuando Eve va a
+pie. Hay una prueba que falla si se puede pasar por encima de uno.
+
+---
+
+## 35. El tráfico se apilaba en montones
+
+**Qué pasaba.** En los cruces se juntaban diez o quince carros encimados en
+todos los ángulos, como un choque múltiple congelado.
+
+**Por qué.** `trafficGap()` solo mira al carro de adelante **de la misma calle y
+el mismo sentido**. En un cruce se juntan cuatro calles distintas, y entre
+carros de calles distintas no había ninguna repulsión.
+
+**Cómo quedó.** Separación mutua: dos carros nunca quedan a menos de 54 de
+distancia, y el de atrás cede el paso en vez de empujar. Además la ventana de
+"alto por semáforo" se acortó de 118 a 82 para que las filas no sean eternas.
+
+Medido tras 14 segundos: de montones de más de diez a un máximo de 3 carros
+juntos, que es una fila normal en un semáforo.
+
+---
+
+## 36. Todos los carros eran la misma caja
+
+**Cómo quedó.** Nueve modelos con silueta y proporciones propias: sedán,
+compacto, **vocho** (con las esquinas recortadas), **pickup** con caja de
+tablones, **combi** alta, **taxi** con su cajita en el techo, **camión** con
+caja y franja, patrulla y la troca de Eve. El carro que robas conserva el
+modelo del que robaste.
+
+---
+
+## 37. La ciudad se veía lavada
+
+**Qué pasaba.** Todo era beige y gris ratón. Se veía como maqueta de
+arquitecto, no como una colonia.
+
+**Cómo quedó.** Tomando como referencia el Gangstar Rio 2D que mencionaste:
+
+- **Paleta de casas de verdad**: rosa mexicano, verde limón, turquesa,
+  terracota, amarillo. Siete tonos por barrio en vez de cuatro grises.
+- **Fachadas**: puerta con marco y manija, toldo de rayas de colores, barandal
+  de balcón en las de dos pisos y macetas junto a la entrada.
+- **Los lugares con nombre dejaron el gris institución**: la Casa de Eve es
+  rosa, Soriana roja, City Club azul, la gasolinera verde, el taller morado.
+- **Palmeras y jardineras** en las banquetas.
+- **Banqueta de manzana**: el hueco entre la calle y las casas era una plancha
+  de tierra plana; ahora es banqueta con guarnición y losetas.
+
+---
+
+## 38. No había razón para andar por la calle
+
+**Qué pasaba.** Manejabas de un objetivo al siguiente y lo de en medio daba
+exactamente igual.
+
+**Cómo quedó.** **40 paquetes escondidos** repartidos por toda la ciudad, fuera
+del asfalto: callejones, patios y rincones. Brillan solo cuando andas cerca, así
+que hay que buscarlos de verdad.
+
+Cada uno da $120, y hay premio cada diez:
+
+- **10** — blindaje completo
+- **20** — pistola con parque
+- **30** — mejora de motor y suspensión para la troca
+- **40** — $5,000 y metralleta
+
+El conteo va en el teléfono, en Noticias. Se guarda en la partida.

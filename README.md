@@ -2,7 +2,20 @@
 
 Sandbox urbano 2D cenital para navegador, ambientado en una versión comprimida y jugable de Colima/Villa de Álvarez. Conserva la lectura visual de los primeros GTA, controles móviles y humor local.
 
-**Versión actual:** 0.8.0. Incluye el tutorial completo, cinco misiones de historia, el encargo del corralón, interiores jugables, radio procedural y navegación vial.
+**Versión actual:** 0.9.0. Incluye el tutorial completo, cinco misiones de historia, el encargo del corralón, interiores jugables, radio procedural y navegación vial.
+
+## Novedades de la 0.9.0
+
+- **Arreglado el bug que te mataba de un roce.** El atropellón de la patrulla
+  hacía daño en cada cuadro: hasta 600 por segundo. Ahora tiene enfriamiento.
+- **Ya se puede perder una estrella.** Las patrullas aparecían dentro del radio
+  que impide enfriarse, así que el contador nunca corría. Esconderse ya sirve.
+- **Eve ya no atraviesa los carros** y el tráfico dejó de apilarse en montones.
+- **Nueve modelos de vehículo**: vocho, combi, taxi, pickup, camión y más.
+- **La ciudad tiene color**: casas pintadas, fachadas con puerta y toldo,
+  palmeras, jardineras y banqueta de manzana.
+- **40 paquetes escondidos** con premio cada diez, para que valga la pena
+  recorrer la ciudad.
 
 ## Novedades de la 0.8.0
 

@@ -515,4 +515,44 @@ if (!(peakSlip > 40)) throw new Error(`El freno de mano no produce derrape (pico
 if (!debug.skidMarks.length) throw new Error("Derrapar no dejó marcas de llanta");
 debug.state.inVehicle = false;
 
+// Regresión: el atropellón de la patrulla hacía daño en CADA cuadro, o sea
+// hasta 600 por segundo. Un segundo pegado a una patrulla no puede matarte.
+debug.state.scene = "city";
+debug.state.jail.active = false;
+debug.state.inVehicle = false;
+debug.state.health = 100;
+debug.state.armor = 0;
+debug.state.wanted = 2;
+debug.policeOfficers.length = 0;
+debug.policeUnits.length = 0;
+debug.policeUnits.push({ x: debug.state.player.x, y: debug.state.player.y, angle: 0, heading: 0, shotTimer: 999, health: 100, status: "active", police: true, model: "patrulla", cash: 0, dropped: false, deployed: true, deployTimer: 999, ramCooldown: 0, speech: "", speechTimer: 0 });
+for (let tick = 0; tick < 60; tick += 1) debug.updateWanted(1 / 60);
+if (debug.state.jail.active) throw new Error("Un segundo de roce con la patrulla mandó a Eve a los separos");
+if (debug.state.health < 88) throw new Error(`El atropellón sigue haciendo daño por cuadro (vida ${Math.round(debug.state.health)} tras un segundo)`);
+
+// Regresión: perder una estrella tiene que ser posible al evadir.
+debug.state.health = 100;
+debug.state.wanted = 1;
+debug.state.wantedTimer = 4;
+debug.policeUnits.length = 0;
+debug.policeOfficers.length = 0;
+for (let tick = 0; tick < 60 * 40; tick += 1) debug.updateWanted(1 / 60);
+if (debug.state.wanted !== 0) throw new Error("Evadiendo 40 segundos sin una sola patrulla cerca, la estrella no baja");
+
+// Regresión: los carros del tráfico son sólidos, Eve no los atraviesa.
+const solidCar = debug.traffic.find((car) => Number.isFinite(car.x) && !car.stolen && !car.hidden);
+if (!solidCar) throw new Error("No hay ningún carro de tráfico colocado");
+if (!debug.cityBlocked(solidCar.x, solidCar.y, 14)) throw new Error("Eve puede atravesar los carros del tráfico");
+
+// Regresión: hay paquetes escondidos y ninguno cae sobre el asfalto.
+if (debug.hiddenPackages.length < 30) throw new Error(`Muy pocos paquetes escondidos (${debug.hiddenPackages.length})`);
+for (const bundle of debug.hiddenPackages) {
+  if (debug.pointOnRoad(bundle.x, bundle.y, 10)) throw new Error("Un paquete escondido quedó en media calle");
+}
+
+// Regresión: los vehículos tienen modelos distintos, no todos la misma caja.
+const modelosUsados = new Set(debug.traffic.map((car) => car.model));
+if (modelosUsados.size < 4) throw new Error(`Muy poca variedad de vehículos (${modelosUsados.size} modelos)`);
+debug.state.wanted = 0;
+
 console.log(`Prueba de ejecución terminada: historia completa, ${debug.urbanBuildings.length} edificios urbanos, ${debug.traffic.length} vehículos, rutinas civiles y colisiones correctas.`);
