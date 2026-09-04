@@ -134,7 +134,14 @@ sobre una calle.
 **Qué pasaba.** Las calles chicas se generaban con coordenadas fijas en bucle,
 sin revisar nada, y varias cruzaban edificios.
 
-**Cómo quedó.** Se descartan al arrancar las que cruzan un edificio con nombre.
+**Cómo quedó (primera pasada).** Se descartaban al arrancar las que cruzaban un
+edificio con nombre.
+
+**Cómo quedó (definitivo).** Al rehacer la red vial esto se invirtió: ahora la
+cuadrícula es el diseño y los edificios son los que se acomodan. Borrar calles
+dejaba la ciudad sin trazado (llegó a quedarse con 2 calles secundarias de 16).
+Solo un edificio grande que no cabe de ninguna forma se come las callecitas que
+le queden debajo, y jamás una avenida con nombre.
 
 ---
 
@@ -160,16 +167,22 @@ quedaban en el aire y la misión no se podía terminar.
 
 ---
 
-## 11. Disparar desde el vehículo salía del lugar equivocado
+## 11. Atacar a puñetazos desde el vehículo (corrección de una nota anterior)
 
-**Qué pasaba.** `attack()` usaba siempre `state.player.x/y` y
-`state.player.angle`. Manejando, la posición de Eve a pie no se actualiza: se
-queda donde te subiste. Así que los balazos salían de donde te habías subido al
-carro, a veces manzanas atrás.
+**Aviso.** Una versión anterior de este documento decía que `attack()` disparaba
+desde una posición vieja de Eve al ir manejando. **Eso era falso** y queda
+corregido aquí: `updateTruck()` termina con `state.player.x = vehicle.x`, así
+que la posición sí está sincronizada cuadro a cuadro. No había tal bug.
 
-**Cómo quedó.** Manejando, el disparo sale del vehículo y apunta hacia donde va
-el cofre. A puñetazos desde el carro ya no se intenta nada: te dice que te
-bajes. El empujón de `hitNpc()` usa el mismo ángulo corregido.
+**Lo que sí estaba mal.** Se podía pulsar PEGAR manejando y el juego intentaba
+resolver un puñetazo con alcance de 40 desde dentro de la troca, que nunca
+llega a nadie: gastaba el enfriamiento del ataque sin avisar por qué no pasaba
+nada.
+
+**Cómo quedó.** A puñetazos desde el carro te dice que te bajes. Con arma de
+fuego sí se dispara, tomando explícitamente el vehículo como origen y el rumbo
+del cofre como dirección, en vez de depender de que la sincronización de
+`state.player` ocurra antes.
 
 ---
 
@@ -288,3 +301,150 @@ Para que no haya sorpresas:
   muebles y dependiente, pero la planta es la misma.
 - **No hay multijugador ni sincronización entre dispositivos.** Igual que antes:
   se exporta e importa el JSON desde Ajustes.
+
+---
+
+# Segunda ronda: la ciudad no se podía manejar
+
+El trazado seguía sin servir para correr, perseguir ni trasladarse. Estas son
+las entradas de esa ronda.
+
+---
+
+## 17. El trazado de calles no estaba pensado para el volante
+
+**Qué pasaba.** Las 19 vialidades eran polilíneas dibujadas a ojo. Se cruzaban
+en ángulos rasantes (donde dos calles casi paralelas se encimaban por cientos
+de unidades), se cortaban a media cuadra sin conectar con nada, y no había un
+solo tramo recto largo. Manejar era chocar contra esquinas raras.
+
+**Cómo quedó.** Red generada con tres piezas, cada una para una cosa concreta:
+
+- **Tercer Anillo Periférico**: un circuito cerrado de 196 de ancho. Se le da
+  la vuelta completa sin frenar. Sirve para las carreras y para huir a fondo.
+- **Cinco ejes horizontales y cinco verticales** que van de lado a lado del
+  mapa y se cruzan casi a escuadra. Rectas largas para rebasar, esquinas
+  limpias para derrapar.
+- **Av. Tecnológico** en diagonal, cruzando a unos 35 grados, para tener una
+  línea de carrera que una cuadrícula pura no da.
+- **Cuadrícula secundaria** de calles angostas a media cuadra, para meterse y
+  perder a la patrulla.
+
+Cada eje lleva una ondulación de ±22 para no parecer trazado con regla, sin
+perder el cruce a escuadra.
+
+---
+
+## 18. Los índices de calles estaban escritos a mano
+
+**Qué pasaba.** El tráfico se repartía con la lista `[0, 0, 1, 1, 2, 4, 13, 14,
+15, 17, 18, 5, ...]` y las patrullas con `[0, 1, 4, 13, 14, 15]`. Son índices
+crudos al arreglo de calles. Al cambiar el trazado apuntaban a calles
+inexistentes.
+
+**Cómo quedó.** Ambos se derivan del tamaño del arreglo.
+
+---
+
+## 19. La ruta de arrancones no seguía ninguna calle
+
+**Qué pasaba.** `raceRoute` eran siete puntos sueltos por el mapa. La "carrera"
+te mandaba a cruzar terreno y edificios.
+
+**Cómo quedó.** Doce metas repartidas sobre el anillo periférico: una vuelta
+completa al circuito.
+
+---
+
+## 20. `pathPosition()` recalculaba el largo de cada calle en cada llamada
+
+**Qué pasaba.** La función que ubica un punto sobre una calle recorría todos los
+tramos midiendo distancias **cada vez**. Se llama miles de veces por cuadro:
+tráfico, patrullas, dibujo del asfalto, mugre, banquetas y props.
+
+**Cómo quedó.** Las longitudes se calculan una vez por calle y se guardan en el
+propio objeto.
+
+---
+
+## 21. `updateTraffic()` creaba 64 arreglos por cuadro
+
+**Qué pasaba.** Para saber a qué distancia iba el carro de adelante hacía
+`Math.min(...traffic.map(...))`, o sea un arreglo nuevo por cada carro, por cada
+cuadro.
+
+**Cómo quedó.** Un bucle simple sin asignar memoria.
+
+---
+
+## 22. Los edificios se sembraban sin saber dónde estaban las calles
+
+**Qué pasaba.** Las construcciones urbanas se colocaban sobre una retícula fija
+por barrio y luego se descartaban las que caían sobre asfalto. Con el trazado
+nuevo se descartaba casi todo: quedaban baldíos enormes y solo 63
+construcciones.
+
+**Cómo quedó.** Las manzanas se derivan del propio trazado (se toman las líneas
+de calle y se arma el rectángulo entre dos consecutivas), y cada manzana se
+llena de lotes hacia adentro. De 63 a 159 construcciones, todas de frente a una
+calle.
+
+Además el grano cambia por manzana: unas de casitas apretadas, otras de bodegas
+grandes. Antes todas salían del mismo tamaño y la ciudad se veía fotocopiada.
+
+---
+
+## 23. El margen de las manzanas era fijo aunque las calles no
+
+**Qué pasaba.** Al armar las manzanas se dejaba una separación fija de 46
+unidades a cada lado. Pero una avenida mide 196 de ancho: su media anchura sola
+son 98. Las manzanas quedaban encima del asfalto y se rechazaban.
+
+**Cómo quedó.** Cada línea de calle guarda su media anchura real y la manzana se
+recorta con ella.
+
+---
+
+## 24. El tráfico circulaba sobre el camellón
+
+**Qué pasaba.** Los carros se colocaban justo sobre el eje de la calle, o sea
+por el centro exacto, encima de la línea divisoria.
+
+**Cómo quedó.** Cada carro toma su carril según el sentido en el que va.
+
+---
+
+## 25. Nunca te topabas un carro
+
+**Qué pasaba.** 34 vehículos repartidos parejo en un mapa de 6400x4200 daban un
+carro cada varios cientos de metros. Las avenidas se veían desiertas.
+
+**Cómo quedó.** 64 vehículos y, sobre todo, reciclado: el que se aleja más de
+1250 unidades reaparece en una calle a 340-900 de Eve. Siempre hay tráfico
+donde estás sin simular cientos de carros.
+
+---
+
+## 26. Los cruces se pintaban como una cuadrícula blanca
+
+**Qué pasaba.** En cada intersección se dibujaban dos cebras del ancho completo,
+una encima de la otra. El resultado era un tablero de ajedrez blanco sobre la
+esquina, con el camellón y las rayas de carril atravesándolo.
+
+**Cómo quedó.** El cruce se dibuja como plancha de asfalto que tapa camellón y
+rayas, más una cebra y su raya de alto por cada acceso, y semáforo en dos
+esquinas.
+
+---
+
+# Lo que cambió de aspecto en la segunda ronda
+
+- **Más pixeles.** La resolución interna subió de 300 a 432 de alto. Mismo borde
+  duro, bastante más detalle.
+- **El asfalto ahora se lee.** Antes era una banda gris con una raya. Ahora
+  lleva orilla blanca continua, divisiones de carril discontinuas (una, dos o
+  tres por sentido según el ancho), desgaste donde pasan las llantas, y las
+  avenidas anchas traen camellón con pasto.
+- **La cámara se abre al acelerar.** A pie se ven 470 unidades de alto; a fondo
+  llega a 760, para ver la curva que viene. Era imposible correr viendo tan
+  poco.

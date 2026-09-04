@@ -10,9 +10,13 @@
 
   const WORLD = { width: 6400, height: 4200 };
   // Resolución interna del juego. Todo se dibuja aquí y el CSS lo estira.
-  const RENDER_HEIGHT = 300;
+  // Más alto = más pixeles y más detalle, sin perder el borde duro.
+  const RENDER_HEIGHT = 432;
   // Unidades de mundo visibles en vertical. Menos = más zoom.
-  const WORLD_VIEW_HEIGHT = 400;
+  // Mundo visible en vertical. A pie se juega cerca; al manejar la cámara se
+  // abre para ver la curva que viene, que es lo que hacía imposible correr.
+  const WORLD_VIEW_HEIGHT = 470;
+  const WORLD_VIEW_HEIGHT_FAST = 760;
   const INTERIOR = { width: 900, height: 650 };
   const SAVE_KEY = "eve-gta-save-v4";
   const LEGACY_SAVE_KEYS = ["eve-gta-save-v3", "eve-gta-save-v2"];
@@ -61,57 +65,140 @@
     "Si ve una patrulla, baje la caguama y súbale a la radio.",
   ];
 
-  const roads = [
-    { name: "AV. MARÍA AHUMADA DE GÓMEZ", width: 150, points: [[-100, 950], [740, 1110], [1510, 1380], [2300, 1740], [3050, 2020], [4050, 2320]] },
-    { name: "AV. TECNOLÓGICO", width: 165, points: [[1150, 2500], [1700, 2150], [2290, 1810], [2880, 1510], [3700, 1210], [4700, 980]] },
-    { name: "CORONA MORFÍN", width: 122, points: [[520, -100], [560, 560], [590, 1180], [640, 2400], [720, 4300]] },
-    { name: "C. HIDALGO", width: 104, points: [[2260, -100], [2280, 520], [2310, 1120], [2360, 2100], [2440, 3300]] },
-    { name: "AV. BENITO JUÁREZ", width: 118, points: [[-100, 2700], [900, 2720], [2050, 2760], [3300, 2820], [4700, 2870]] },
-    { name: "P.° MIGUEL DE LA MADRID", width: 136, points: [[2430, 80], [3300, 200], [4600, 260], [6500, 360]] },
-    { name: "GABRIEL LEÓN POLANCO", width: 82, points: [[760, 80], [1080, 450], [1410, 810], [1750, 1190]] },
-    { name: "RAFAEL CARRILLO", width: 78, points: [[1160, -70], [1430, 270], [1710, 620], [2020, 990]] },
-    { name: "IGNACIO TORRES", width: 78, points: [[570, 280], [940, 690], [1260, 1040]] },
-    { name: "LUIS GAYTÁN CABRERA", width: 78, points: [[920, 980], [1280, 650], [1630, 340]] },
-    { name: "FELIPE SEVILLA", width: 78, points: [[1460, 1060], [1740, 780], [2020, 500]] },
-    { name: "FCO. JAVIER MINA", width: 76, points: [[680, 2010], [1070, 1710], [1430, 1450]] },
-    { name: "PINO SUÁREZ", width: 76, points: [[720, 2220], [820, 1640], [900, 1170]] },
-    { name: "AV. CONSTITUCIÓN", width: 126, points: [[4050, 200], [4070, 1050], [4110, 2050], [4180, 3150], [4250, 4300]] },
-    { name: "AV. DE LOS MAESTROS", width: 112, points: [[3150, 760], [4000, 800], [5050, 860], [6200, 930]] },
-    { name: "CALZADA GALVÁN", width: 118, points: [[5000, 1150], [5040, 2100], [5100, 3150], [5200, 4300]] },
-    { name: "LIBRAMIENTO COLIMA", width: 170, points: [[2700, 3480], [3800, 3500], [5000, 3560], [6500, 3680]] },
-    { name: "CARRETERA A TECOMÁN", width: 158, points: [[4750, 3330], [5200, 3600], [5750, 3900], [6400, 4180]] },
-    { name: "AV. FELIPE SEVILLA DEL RÍO", width: 118, points: [[2650, 1180], [3650, 1140], [4750, 1120], [6100, 1160]] },
-  ];
+  function seededValue(seed) {
+    const value = Math.sin(seed * 9283.17 + 17.23) * 43758.5453;
+    return value - Math.floor(value);
+  }
 
-  const residentialRoads = [];
-  for (let i = 0; i < 7; i += 1) {
-    residentialRoads.push({
-      name: "",
-      width: 54,
-      points: [[110 + i * 245, 60], [530 + i * 230, 540], [880 + i * 215, 930]],
-    });
+  // ---------------------------------------------------------------------------
+  // RED VIAL
+  // El trazado anterior era un montón de líneas dibujadas a ojo que se cruzaban
+  // en ángulos rasantes, se cortaban a media cuadra y no dejaban manejar. Esta
+  // se genera con tres piezas pensadas para el volante:
+  //   1. Un anillo periférico cerrado: vueltas completas sin frenar, para
+  //      carreras y para perder a la policía a fondo.
+  //   2. Ejes rectos largos que se cruzan casi a escuadra: rebases, derrapes en
+  //      esquina y traslados rápidos de punta a punta.
+  //   3. Una cuadrícula secundaria conectada para escaparse por dentro.
+  // ---------------------------------------------------------------------------
+  const GRID = {
+    left: 380,
+    right: 6020,
+    top: 380,
+    bottom: 3820,
+    corner: 430,
+    // Ejes horizontales: y y nombre.
+    across: [
+      [900, "P.° MIGUEL DE LA MADRID", 150],
+      [1500, "AV. DE LOS MAESTROS", 138],
+      [2160, "AV. FELIPE SEVILLA DEL RÍO", 150],
+      [2820, "AV. BENITO JUÁREZ", 138],
+      [3380, "AV. MARÍA AHUMADA DE GÓMEZ", 150],
+    ],
+    // Ejes verticales.
+    down: [
+      [1180, "CORONA MORFÍN", 138],
+      [2200, "C. HIDALGO", 126],
+      [3260, "CALZADA GALVÁN", 138],
+      [4340, "AV. CONSTITUCIÓN", 150],
+      [5300, "CARRETERA A TECOMÁN", 138],
+    ],
+  };
+
+  // Ondulación chica para que no parezcan trazadas con regla, sin perder el
+  // cruce a escuadra que hace legibles las esquinas al manejar.
+  function wobble(seed, amount = 22) {
+    return (seededValue(seed) - 0.5) * 2 * amount;
   }
-  for (let i = 0; i < 5; i += 1) {
-    residentialRoads.push({
-      name: "",
-      width: 50,
-      points: [[720, 210 + i * 190], [1300, 180 + i * 170], [2100, 140 + i * 145]],
+
+  function buildRoadNetwork() {
+    const list = [];
+    const { left, right, top, bottom, corner } = GRID;
+
+    // 1. Anillo periférico. Cierra sobre sí mismo: se puede dar vuelta entera.
+    list.push({
+      name: "TERCER ANILLO PERIFÉRICO",
+      width: 196,
+      ring: true,
+      points: [
+        [left + corner, top], [right - corner, top],
+        [right, top + corner], [right, bottom - corner],
+        [right - corner, bottom], [left + corner, bottom],
+        [left, bottom - corner], [left, top + corner],
+        [left + corner, top],
+      ],
     });
-  }
-  for (let i = 0; i < 7; i += 1) {
-    residentialRoads.push({
-      name: "",
-      width: 54,
-      points: [[2820 + i * 460, 420], [2840 + i * 455, 1750], [2920 + i * 450, 3300]],
+
+    // 2. Ejes largos de lado a lado.
+    GRID.across.forEach(([y, name, width], index) => {
+      const points = [];
+      for (let i = 0; i <= 6; i += 1) {
+        const x = left + ((right - left) * i) / 6;
+        const off = i === 0 || i === 6 ? 0 : wobble(index * 97 + i * 13);
+        points.push([Math.round(x), Math.round(y + off)]);
+      }
+      list.push({ name, width, points });
     });
-  }
-  for (let i = 0; i < 6; i += 1) {
-    residentialRoads.push({
-      name: "",
-      width: 52,
-      points: [[2700, 1450 + i * 330], [4300, 1480 + i * 325], [6300, 1510 + i * 320]],
+
+    GRID.down.forEach(([x, name, width], index) => {
+      const points = [];
+      for (let i = 0; i <= 5; i += 1) {
+        const y = top + ((bottom - top) * i) / 5;
+        const off = i === 0 || i === 5 ? 0 : wobble(index * 131 + i * 29);
+        points.push([Math.round(x + off), Math.round(y)]);
+      }
+      list.push({ name, width, points });
     });
+
+    // 3. Diagonal. Da la línea de carrera larga que una cuadrícula pura no
+    //    tiene, y cruza a unos 35 grados, no rasante.
+    list.push({
+      name: "AV. TECNOLÓGICO",
+      width: 156,
+      points: [[1180, 2820], [2200, 2200], [3260, 1620], [4340, 900]],
+    });
+
+    return list;
   }
+
+  const roads = buildRoadNetwork();
+
+  // Cuadrícula secundaria: calles angostas a media cuadra, para meterse y
+  // perder a la patrulla. Se generan entre ejes, no encima de ellos.
+  function buildLocalStreets() {
+    const list = [];
+    const { left, right, top, bottom } = GRID;
+    const acrossY = [top, ...GRID.across.map((entry) => entry[0]), bottom];
+    const downX = [left, ...GRID.down.map((entry) => entry[0]), bottom > 0 ? right : right];
+
+    for (let i = 0; i < acrossY.length - 1; i += 1) {
+      const gap = acrossY[i + 1] - acrossY[i];
+      const cuts = Math.max(1, Math.round(gap / 330) - 1);
+      for (let c = 1; c <= cuts; c += 1) {
+        const y = Math.round(acrossY[i] + (gap * c) / (cuts + 1));
+        list.push({
+          name: "",
+          width: 58,
+          points: [[left + 40, y], [Math.round((left + right) / 2), y + Math.round(wobble(i * 17 + c, 14))], [right - 40, y]],
+        });
+      }
+    }
+    for (let i = 0; i < downX.length - 1; i += 1) {
+      const gap = downX[i + 1] - downX[i];
+      const cuts = Math.max(1, Math.round(gap / 350) - 1);
+      for (let c = 1; c <= cuts; c += 1) {
+        const x = Math.round(downX[i] + (gap * c) / (cuts + 1));
+        list.push({
+          name: "",
+          width: 56,
+          points: [[x, top + 40], [x + Math.round(wobble(i * 23 + c, 14)), Math.round((top + bottom) / 2)], [x, bottom - 40]],
+        });
+      }
+    }
+    return list;
+  }
+
+  const residentialRoads = buildLocalStreets();
 
   const buildings = [
     { id: "soriana", x: 40, y: 1125, w: 640, h: 390, label: "SORIANA HIPER COLIMA", roof: "#c7c4bc", accent: "#2878cd" },
@@ -141,29 +228,11 @@
     { id: "corralon", x: 5740, y: 500, w: 500, h: 300, label: "CORRALÓN DE SEPAROS", roof: "#5a5d60", accent: "#e54857", yard: true },
   ];
 
-  // BUG: las calles residenciales se generaban con coordenadas fijas y varias
-  // pasaban por encima de edificios (por eso salían carros sobre la Casa de
-  // Eve). Se descartan los tramos que cruzan un edificio con nombre.
-  (() => {
-    const crossesBuilding = (road) => {
-      for (let i = 0; i < road.points.length - 1; i += 1) {
-        const [ax, ay] = road.points[i];
-        const [bx, by] = road.points[i + 1];
-        for (const building of buildings) {
-          if (segmentIntersectsExpandedRect(ax, ay, bx, by, building, road.width / 2 + 8)) return true;
-        }
-      }
-      return false;
-    };
-    for (let i = residentialRoads.length - 1; i >= 0; i -= 1) {
-      if (crossesBuilding(residentialRoads[i])) residentialRoads.splice(i, 1);
-    }
-  })();
+  // Antes aquí se borraban las calles secundarias que cruzaban un edificio.
+  // Con el trazado nuevo eso está al revés: la cuadrícula es el diseño y los
+  // edificios son los que se acomodan, así que el pase de abajo los mueve a
+  // ellos y las calles se quedan completas.
 
-  // BUG GORDO: 22 edificios con nombre estaban plantados encima de avenidas.
-  // Por eso el tráfico "pasaba por dentro" de la Casa de Eve y del Pelícano.
-  // Este pase los empuja lo mínimo necesario para dejar la calle libre y
-  // guarda el desplazamiento para mover también sus puntos de interés.
   const buildingShifts = new Map();
   (() => {
     const directions = [];
@@ -171,15 +240,27 @@
       const angle = (i / 16) * Math.PI * 2;
       directions.push([Math.cos(angle), Math.sin(angle)]);
     }
-    // Un sitio es válido si no pisa calle y no se encima con otro edificio.
-    const spotFree = (rect, self) => {
-      if (rectTouchesRoad(rect, 10)) return false;
+    const touchesAny = (rect, roadList, extra) => roadList.some((road) => {
+      for (let i = 0; i < road.points.length - 1; i += 1) {
+        const a = road.points[i];
+        const b = road.points[i + 1];
+        if (segmentIntersectsExpandedRect(a[0], a[1], b[0], b[1], rect, road.width / 2 + extra)) return true;
+      }
+      return false;
+    });
+    const clearOfBuildings = (rect, self) => {
       for (const other of buildings) {
         if (other === self) continue;
         if (rectanglesOverlap(rect, other, 24)) return false;
       }
       return true;
     };
+    // Un sitio es válido si no pisa calle y no se encima con otro edificio.
+    const spotFree = (rect, self) => !rectTouchesRoad(rect, 10) && clearOfBuildings(rect, self);
+    // Versión indulgente: ignora las calles secundarias. Una tienda grande
+    // ocupa la manzana entera y se come las callecitas, pero jamás una
+    // avenida con nombre.
+    const spotFreeMajor = (rect, self) => !touchesAny(rect, roads, 10) && clearOfBuildings(rect, self);
     for (const building of buildings) {
       if (spotFree(building, building)) continue;
       let best = null;
@@ -202,7 +283,29 @@
         }
         if (best) break;
       }
-      if (!best) continue;
+      if (!best) {
+        // No cupo entre las callecitas: se le busca lugar respetando solo las
+        // avenidas y se borran las secundarias que le queden debajo.
+        for (const scale of scales) {
+          const w = Math.round(building.w * scale);
+          const h = Math.round(building.h * scale);
+          for (let step = 0; step <= 900 && !best; step += 20) {
+            for (const [dx, dy] of directions) {
+              const moved = { x: building.x + dx * step, y: building.y + dy * step, w, h };
+              if (moved.x < 30 || moved.y < 30 || moved.x + moved.w > WORLD.width - 30 || moved.y + moved.h > WORLD.height - 30) continue;
+              if (!spotFreeMajor(moved, building)) continue;
+              best = { dx: dx * step, dy: dy * step, w, h };
+              break;
+            }
+          }
+          if (best) break;
+        }
+        if (!best) continue;
+        const placed = { x: building.x + best.dx, y: building.y + best.dy, w: best.w, h: best.h };
+        for (let i = residentialRoads.length - 1; i >= 0; i -= 1) {
+          if (touchesAny(placed, [residentialRoads[i]], 10)) residentialRoads.splice(i, 1);
+        }
+      }
       building.x += best.dx;
       building.y += best.dy;
       building.w = best.w;
@@ -287,11 +390,6 @@
     return false;
   }
 
-  function seededValue(seed) {
-    const value = Math.sin(seed * 9283.17 + 17.23) * 43758.5453;
-    return value - Math.floor(value);
-  }
-
   function inProtectedLandscape(x, y, radius = 0) {
     const reserveX = (x - 3370) / (850 + radius);
     const reserveY = (y - 790) / (735 + radius);
@@ -304,6 +402,44 @@
     return false;
   }
 
+  // Las manzanas salen del propio trazado: se toman las líneas de calle, se
+  // arma el rectángulo entre dos consecutivas y se llena de lotes hacia
+  // adentro. Antes los edificios se sembraban en una retícula suelta que no
+  // sabía dónde estaban las calles, así que la mitad caía sobre el asfalto y
+  // se descartaba: quedaban baldíos enormes.
+  function cityBlocks() {
+    // Cada línea guarda su media anchura: una avenida mide 196 y una calle
+    // local 58, así que un margen fijo dejaba las manzanas encima del asfalto.
+    const ringHalf = 196 / 2;
+    const xLines = [{ at: GRID.left, half: ringHalf }, { at: GRID.right, half: ringHalf }];
+    const yLines = [{ at: GRID.top, half: ringHalf }, { at: GRID.bottom, half: ringHalf }];
+    for (const [y, , width] of GRID.across) yLines.push({ at: y, half: width / 2 });
+    for (const [x, , width] of GRID.down) xLines.push({ at: x, half: width / 2 });
+    for (const road of residentialRoads) {
+      const first = road.points[0];
+      const last = road.points[road.points.length - 1];
+      const half = road.width / 2 + 16; // el bamboleo del trazo local
+      if (Math.abs(first[1] - last[1]) < 60) yLines.push({ at: first[1], half });
+      else if (Math.abs(first[0] - last[0]) < 60) xLines.push({ at: first[0], half });
+    }
+    xLines.sort((a, b) => a.at - b.at);
+    yLines.sort((a, b) => a.at - b.at);
+
+    const margin = 18;
+    const blocks = [];
+    for (let i = 0; i < xLines.length - 1; i += 1) {
+      for (let j = 0; j < yLines.length - 1; j += 1) {
+        const x = xLines[i].at + xLines[i].half + margin;
+        const y = yLines[j].at + yLines[j].half + margin;
+        const w = xLines[i + 1].at - xLines[i + 1].half - margin - x;
+        const h = yLines[j + 1].at - yLines[j + 1].half - margin - y;
+        if (w < 86 || h < 76) continue;
+        blocks.push({ x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) });
+      }
+    }
+    return blocks;
+  }
+
   function generateUrbanBuildings() {
     const generated = [];
     const roofSets = {
@@ -314,38 +450,54 @@
     };
     const signs = ["ABARROTES", "TACOS", "PAPELERÍA", "LLANTERA", "ESTÉTICA", "REFACCIONES", "COPIAS", "FERRETERÍA"];
     let sequence = 0;
-    for (const district of districts) {
-      let row = 0;
-      for (let y = district.y + 64; y < district.y + district.h - 80; y += district.cellY) {
-        let column = 0;
-        for (let x = district.x + 62 + (row % 2) * 42; x < district.x + district.w - 80; x += district.cellX) {
-          const seed = sequence * 13 + row * 37 + column * 71 + district.id.length * 101;
-          const w = 74 + Math.floor(seededValue(seed + 1) * 58);
-          const h = 58 + Math.floor(seededValue(seed + 2) * 48);
-          const candidate = {
-            x: Math.round(x + (seededValue(seed + 3) - 0.5) * 46),
-            y: Math.round(y + (seededValue(seed + 4) - 0.5) * 38),
-            w,
-            h,
+
+    for (const block of cityBlocks()) {
+      const centerX = block.x + block.w / 2;
+      const centerY = block.y + block.h / 2;
+      const district = districts.find((entry) => centerX >= entry.x && centerX <= entry.x + entry.w && centerY >= entry.y && centerY <= entry.y + entry.h)
+        || districts[0];
+      const roofSet = roofSets[district.id] || roofSets.centro;
+
+      // El grano cambia por manzana: unas de casitas apretadas, otras de
+      // bodegas grandes. Antes todas salían del mismo tamaño y la ciudad
+      // entera se veía fotocopiada.
+      const grain = seededValue(Math.round(block.x) * 31 + Math.round(block.y) * 17);
+      const lotSize = grain < 0.3 ? 104 : grain < 0.72 ? 138 : 196;
+      const cols = Math.max(1, Math.round(block.w / lotSize));
+      const rows = Math.max(1, Math.round(block.h / (lotSize * 0.88)));
+      const lotW = block.w / cols;
+      const lotH = block.h / rows;
+
+      for (let c = 0; c < cols; c += 1) {
+        for (let r = 0; r < rows; r += 1) {
+          sequence += 1;
+          const seed = sequence * 13 + Math.round(block.x) * 7 + Math.round(block.y) * 3;
+          if (seededValue(seed + 20) < 0.1) continue; // uno que otro baldío
+
+          const lot = {
+            x: Math.round(block.x + c * lotW + 3),
+            y: Math.round(block.y + r * lotH + 3),
+            w: Math.round(lotW - 6),
+            h: Math.round(lotH - 6),
           };
-          const lot = { x: candidate.x - 17, y: candidate.y - 17, w: candidate.w + 34, h: candidate.h + 34 };
-          const centerX = candidate.x + candidate.w / 2;
-          const centerY = candidate.y + candidate.h / 2;
+          const inset = 12 + Math.floor(seededValue(seed + 3) * 10);
+          const candidate = {
+            x: lot.x + inset,
+            y: lot.y + inset,
+            w: Math.max(30, lot.w - inset * 2),
+            h: Math.max(26, lot.h - inset * 2),
+          };
           const radius = Math.hypot(candidate.w, candidate.h) * 0.42;
-          const outOfBounds = lot.x < 12 || lot.y < 12 || lot.x + lot.w > WORLD.width - 12 || lot.y + lot.h > WORLD.height - 12;
-          const overlapsLandmark = buildings.some((building) => rectanglesOverlap(lot, building, 26));
-          const overlapsParking = parkingLots.some((parking) => rectanglesOverlap(lot, parking, 10));
-          const overlapsGenerated = generated.some((building) => rectanglesOverlap(lot, building, 18));
+          const overlapsLandmark = buildings.some((building) => rectanglesOverlap(lot, building, 22));
+          const overlapsParking = parkingLots.some((parking) => rectanglesOverlap(lot, parking, 8));
           const blocksActivity = urbanClearings.some((clearing) => circleHitsRect(clearing.x, clearing.y, clearing.r, lot));
-          if (outOfBounds || overlapsLandmark || overlapsParking || overlapsGenerated || blocksActivity || rectTouchesRoad(lot) || inProtectedLandscape(centerX, centerY, radius)) {
-            column += 1;
-            sequence += 1;
-            continue;
-          }
+          if (overlapsLandmark || overlapsParking || blocksActivity
+            || rectTouchesRoad(lot, 2)
+            || inProtectedLandscape(candidate.x + candidate.w / 2, candidate.y + candidate.h / 2, radius)) continue;
+
           const use = district.uses[Math.floor(seededValue(seed + 5) * district.uses.length)];
-          const roofSet = roofSets[district.id];
           generated.push({
-            id: `urban-${district.id}-${row}-${column}`,
+            id: `urban-${Math.round(block.x)}-${Math.round(block.y)}-${c}-${r}`,
             district: district.id,
             x: candidate.x,
             y: candidate.y,
@@ -359,10 +511,7 @@
             detailSeed: seed,
             sign: use === "shop" ? signs[Math.floor(seededValue(seed + 9) * signs.length)] : "",
           });
-          column += 1;
-          sequence += 1;
         }
-        row += 1;
       }
     }
     return generated;
@@ -478,7 +627,9 @@
   }
 
   const trafficColors = ["#cc4c48", "#e6c852", "#3e86b8", "#d7d3c6", "#b860a7", "#75a75a", "#e29c42", "#7e65ad", "#4f827c", "#b94a4a"];
-  const trafficRoads = [0, 0, 1, 1, 2, 4, 13, 14, 15, 17, 18, 5, 16, 3, 6, 10, 0, 4, 13, 14, 15, 17, 18, 5];
+  // Se reparte el tráfico entre todas las vialidades existentes en vez de una
+  // lista de índices a mano, que apuntaba a calles que ya no existen.
+  const trafficRoads = Array.from({ length: 64 }, (_, index) => index % roads.length);
   const traffic = trafficRoads.map((road, index) => {
     const cruiseSpeed = 0.0105 + (index % 6) * 0.00165;
     return {
@@ -878,15 +1029,19 @@
     },
   };
 
-  const raceRoute = [
-    { x: 5365, y: 3455 },
-    { x: 4200, y: 3540 },
-    { x: 3320, y: 2820 },
-    { x: 4140, y: 2050 },
-    { x: 5080, y: 2450 },
-    { x: 5800, y: 3650 },
-    { x: 5365, y: 3455 },
-  ];
+  // Circuito de arrancones: una vuelta completa al anillo periférico. Antes
+  // eran siete puntos sueltos por el mapa que ni seguían una calle.
+  const raceRoute = (() => {
+    const ring = roads.find((road) => road.ring) || roads[0];
+    const points = [];
+    const checkpoints = 12;
+    for (let i = 0; i < checkpoints; i += 1) {
+      const position = pathPosition(ring, i / checkpoints);
+      points.push({ x: Math.round(position.x), y: Math.round(position.y) });
+    }
+    points.push({ ...points[0] });
+    return points;
+  })();
 
   const didiStops = [
     { name: "KFC Villa de Álvarez", x: 1550, y: 1335 },
@@ -1001,11 +1156,14 @@
     if (state.scene !== "city") {
       return clamp(Math.min(view.bufferWidth / (INTERIOR.width + 40), view.bufferHeight / (INTERIOR.height + 40)), 0.22, 1.1);
     }
-    return clamp(view.bufferHeight / WORLD_VIEW_HEIGHT, 0.34, 0.92);
+    const speed = state.inVehicle ? Math.abs(activeVehicle().speed || 0) : 0;
+    const openness = clamp(speed / 300, 0, 1);
+    const worldHeight = lerp(WORLD_VIEW_HEIGHT, WORLD_VIEW_HEIGHT_FAST, openness);
+    return clamp(view.bufferHeight / worldHeight, 0.3, 1.3);
   }
 
   function updateCamera(dt) {
-    camera.zoom = lerp(camera.zoom, desiredZoom(), clamp(dt * 7, 0, 1));
+    camera.zoom = lerp(camera.zoom, desiredZoom(), clamp(dt * (state.scene === "city" ? 2.2 : 7), 0, 1));
     const focus = getFocus();
     const bounds = getMapBounds();
     // Mira un poco hacia donde vas, para no ir siempre pegado al borde.
@@ -1537,14 +1695,70 @@
     if (vehicle.health <= 0) destroyVehicle(vehicle);
   }
 
+  // Los carros iban justo sobre el eje de la calle, encima del camellón. Ahora
+  // cada uno circula por su carril, según el sentido en el que va.
+  function trafficLaneOffset(car) {
+    const road = roads[car.road];
+    const lanes = road.width >= 150 ? 3 : road.width >= 120 ? 2 : 1;
+    const laneWidth = (road.width / 2 - 16) / lanes;
+    const lane = (Number(car.id.split("-").pop()) % lanes) + 0.5;
+    return (car.reverse ? -1 : 1) * lane * laneWidth;
+  }
+
+  function placeTrafficCar(car) {
+    const road = roads[car.road];
+    const position = pathPosition(road, car.t);
+    const offset = trafficLaneOffset(car);
+    const nx = Math.cos(position.angle + Math.PI / 2) * offset;
+    const ny = Math.sin(position.angle + Math.PI / 2) * offset;
+    car.x = position.x + nx;
+    car.y = position.y + ny;
+    car.angle = position.angle + Math.PI / 2 + (car.reverse ? Math.PI : 0);
+    return position;
+  }
+
+  // Un mapa de 6400x4200 con 64 carros repartidos parejo se siente desierto:
+  // casi nunca coincides con uno. Los que quedan lejos se reciclan cerca de
+  // Eve, así que siempre hay tráfico donde estás sin simular cientos.
+  function recycleTrafficCar(car, focus) {
+    for (let attempt = 0; attempt < 18; attempt += 1) {
+      const roadIndex = Math.floor(Math.random() * roads.length);
+      const t = Math.random();
+      const position = pathPosition(roads[roadIndex], t);
+      const dist = Math.hypot(position.x - focus.x, position.y - focus.y);
+      if (dist < 340 || dist > 900) continue;
+      car.road = roadIndex;
+      car.t = t;
+      car.speed = car.cruiseSpeed;
+      car.collisionCooldown = 0;
+      placeTrafficCar(car);
+      return true;
+    }
+    return false;
+  }
+
   function updateTraffic(dt) {
     const hour = (state.time / 60) % 24;
     const veryLate = hour >= 2 && hour < 5.5;
+    const focus = getFocus();
     for (const car of traffic) {
       car.collisionCooldown = Math.max(0, (car.collisionCooldown || 0) - dt);
       car.hidden = veryLate && Number(car.id.split("-").pop()) % 3 !== 0;
       if (car.stolen) continue;
-      const gap = Math.min(...traffic.map((other) => trafficGap(car, other)));
+
+      car.recycleTimer = (car.recycleTimer || 0) + dt;
+      if (car.recycleTimer > 0.7) {
+        car.recycleTimer = 0;
+        if (!Number.isFinite(car.x) || Math.hypot(car.x - focus.x, car.y - focus.y) > 1250) recycleTrafficCar(car, focus);
+      }
+
+      // Bucle simple en vez de Math.min(...traffic.map(...)): eran 64 arreglos
+      // nuevos por cuadro nada más para sacar la distancia al de adelante.
+      let gap = Infinity;
+      for (const other of traffic) {
+        const value = trafficGap(car, other);
+        if (value < gap) gap = value;
+      }
       const beforeMove = pathPosition(roads[car.road], car.t);
       car.stoppedAtLight = trafficMustStop(car, beforeMove);
       car.braking = gap < 0.052 || car.stoppedAtLight;
@@ -1553,10 +1767,7 @@
       car.t += car.speed * dt * (car.reverse ? -1 : 1);
       if (car.t > 1.08) car.t = -0.08;
       if (car.t < -0.08) car.t = 1.08;
-      const position = pathPosition(roads[car.road], car.t);
-      car.x = position.x;
-      car.y = position.y;
-      car.angle = position.angle + Math.PI / 2 + (car.reverse ? Math.PI : 0);
+      placeTrafficCar(car);
       if (!car.hidden) collideWithTraffic(car);
     }
   }
@@ -1895,7 +2106,7 @@
     const targetCount = isNight() ? 6 : 2;
     while (patrols.length < targetCount) {
       const index = patrols.length;
-      patrols.push({ road: [0, 1, 4, 13, 14, 15][index % 6], t: (index * 0.19) % 1, speed: 0.012 + index * 0.001, reverse: index % 2 === 1 });
+      patrols.push({ road: (index * 3 + 1) % roads.length, t: (index * 0.19) % 1, speed: 0.012 + index * 0.001, reverse: index % 2 === 1 });
     }
     while (patrols.length > targetCount) patrols.pop();
     const focus = getFocus();
@@ -3680,15 +3891,26 @@
     }
   }
 
-  function pathPosition(road, t) {
-    const points = road.points;
-    const segmentLengths = [];
+  // Las longitudes de cada tramo se recalculaban en CADA llamada, y esto se
+  // llama miles de veces por cuadro (tráfico, patrullas, dibujo de calles,
+  // mugre, banquetas). Ahora se calculan una vez por calle.
+  function roadMetrics(road) {
+    if (road._lengths) return road;
+    const lengths = [];
     let total = 0;
-    for (let i = 0; i < points.length - 1; i += 1) {
-      const length = Math.hypot(points[i + 1][0] - points[i][0], points[i + 1][1] - points[i][1]);
-      segmentLengths.push(length);
+    for (let i = 0; i < road.points.length - 1; i += 1) {
+      const length = Math.hypot(road.points[i + 1][0] - road.points[i][0], road.points[i + 1][1] - road.points[i][1]);
+      lengths.push(length);
       total += length;
     }
+    road._lengths = lengths;
+    road._total = total;
+    return road;
+  }
+
+  function pathPosition(road, t) {
+    const points = road.points;
+    const { _lengths: segmentLengths, _total: total } = roadMetrics(road);
     let target = clamp(t, 0, 1) * total;
     for (let i = 0; i < segmentLengths.length; i += 1) {
       if (target <= segmentLengths[i]) {
@@ -3969,37 +4191,73 @@
     ctx.restore();
   }
 
-  function drawCrosswalk(intersection, angle, roadWidth, green) {
+  // Un cruce se dibuja como plancha de asfalto que tapa camellón y rayas, más
+  // una cebra por cada acceso. Antes se pintaban dos cebras del ancho completo,
+  // una encima de otra, y quedaba una cuadrícula blanca sobre la esquina.
+  function drawJunctionPad(intersection) {
+    const size = Math.max(intersection.widthA, intersection.widthB);
+    ctx.save();
+    ctx.translate(px(intersection.x), px(intersection.y));
+    ctx.rotate(intersection.angleA);
+    ctx.fillStyle = palette.asphalt;
+    ctx.fillRect(px(-intersection.widthB / 2 - 4), px(-intersection.widthA / 2), px(intersection.widthB + 8), px(intersection.widthA));
+    ctx.restore();
+    ctx.save();
+    ctx.translate(px(intersection.x), px(intersection.y));
+    ctx.rotate(intersection.angleB);
+    ctx.fillStyle = palette.asphalt;
+    ctx.fillRect(px(-intersection.widthA / 2 - 4), px(-intersection.widthB / 2), px(intersection.widthA + 8), px(intersection.widthB));
+    ctx.restore();
+    return size;
+  }
+
+  function drawZebra(intersection, angle, roadWidth, crossWidth, green) {
     ctx.save();
     ctx.translate(px(intersection.x), px(intersection.y));
     ctx.rotate(angle);
-    ctx.fillStyle = "#d9d6c4";
-    for (let offset = -24; offset <= 24; offset += 12) ctx.fillRect(offset - 3, px(-roadWidth * 0.43), 6, px(roadWidth * 0.86));
-    ctx.fillStyle = "rgba(10,12,16,.3)";
-    for (let offset = -24; offset <= 24; offset += 12) ctx.fillRect(offset - 3, px(roadWidth * 0.43) - 3, 6, 3);
-    // Semáforo: poste oscuro con foco encendido.
+    // Las cebras van en los dos accesos, fuera de la plancha del cruce.
+    for (const side of [-1, 1]) {
+      const at = side * (crossWidth / 2 + 13);
+      ctx.fillStyle = "#d9d6c4";
+      for (let offset = -roadWidth * 0.44; offset < roadWidth * 0.44; offset += 15) {
+        ctx.fillRect(px(at - 9), px(offset), 18, 9);
+      }
+      ctx.fillStyle = "rgba(10,12,16,.28)";
+      for (let offset = -roadWidth * 0.44; offset < roadWidth * 0.44; offset += 15) {
+        ctx.fillRect(px(at - 9), px(offset + 9), 18, 2);
+      }
+      // Raya de alto.
+      ctx.fillStyle = "rgba(226,222,204,.55)";
+      ctx.fillRect(px(at + side * 13), px(-roadWidth * 0.44), 4, px(roadWidth * 0.88));
+    }
+    // Semáforo en dos esquinas.
     const lightColor = green ? "#5fd167" : "#e2434f";
     for (const corner of [[-1, -1], [1, 1]]) {
-      const cx = corner[0] * roadWidth * 0.46;
-      const cy = corner[1] * roadWidth * 0.46;
-      ctx.fillStyle = "rgba(6,8,12,.4)";
-      ctx.fillRect(px(cx - 3), px(cy - 3), 12, 12);
+      const cx = corner[0] * (crossWidth / 2 + 22);
+      const cy = corner[1] * (roadWidth / 2 + 16);
+      ctx.fillStyle = "rgba(6,8,12,.42)";
+      ctx.fillRect(px(cx - 3), px(cy - 3), 13, 13);
       ctx.fillStyle = "#191d22";
-      ctx.fillRect(px(cx - 5), px(cy - 5), 11, 11);
+      ctx.fillRect(px(cx - 6), px(cy - 6), 12, 12);
       ctx.fillStyle = lightColor;
-      ctx.fillRect(px(cx - 3), px(cy - 3), 7, 7);
-      ctx.fillStyle = "rgba(255,255,255,.5)";
-      ctx.fillRect(px(cx - 3), px(cy - 3), 3, 3);
+      ctx.fillRect(px(cx - 4), px(cy - 4), 8, 8);
+      ctx.fillStyle = "rgba(255,255,255,.45)";
+      ctx.fillRect(px(cx - 4), px(cy - 4), 3, 3);
     }
     ctx.restore();
+  }
+
+  function drawCrosswalk(intersection, angle, roadWidth, green) {
+    drawZebra(intersection, angle, roadWidth, roadWidth, green);
   }
 
   function drawRoadIntersections() {
     const lightPhase = Math.floor(state.time / 8) % 2;
     for (const intersection of roadIntersections) {
-      if (!visiblePoint(intersection, 120)) continue;
-      drawCrosswalk(intersection, intersection.angleA, intersection.widthA, lightPhase === intersection.phase);
-      drawCrosswalk(intersection, intersection.angleB, intersection.widthB, lightPhase !== intersection.phase);
+      if (!visiblePoint(intersection, 160)) continue;
+      drawJunctionPad(intersection);
+      drawZebra(intersection, intersection.angleA, intersection.widthA, intersection.widthB, lightPhase === intersection.phase);
+      drawZebra(intersection, intersection.angleB, intersection.widthB, intersection.widthA, lightPhase !== intersection.phase);
     }
   }
 
@@ -4062,7 +4320,7 @@
     }
   }
 
-  function strokePath(road, width, color, dash = null, capRound = true) {
+  function strokePath(road, width, color, dash = null) {
     const points = road.points;
     ctx.beginPath();
     ctx.moveTo(points[0][0], points[0][1]);
@@ -4086,16 +4344,59 @@
     strokePath(road, road.width, residential ? palette.asphaltDark : palette.asphalt);
   }
 
+  // Trazo paralelo a la calle, para pintar carriles de verdad en vez de
+  // simular con anillos de grosor.
+  function offsetPath(road, offset) {
+    const key = `_off${Math.round(offset)}`;
+    if (road[key]) return road[key];
+    const points = road.points;
+    const result = [];
+    for (let i = 0; i < points.length; i += 1) {
+      const prev = points[Math.max(0, i - 1)];
+      const next = points[Math.min(points.length - 1, i + 1)];
+      const angle = Math.atan2(next[1] - prev[1], next[0] - prev[0]) + Math.PI / 2;
+      result.push([points[i][0] + Math.cos(angle) * offset, points[i][1] + Math.sin(angle) * offset]);
+    }
+    road[key] = { points: result, width: 0 };
+    return road[key];
+  }
+
   function drawRoadMarkings(road, residential) {
-    if (residential) return;
-    // Desgaste de carril: dos franjas más claras donde pasan las llantas.
-    strokePath(road, Math.max(2, road.width * 0.62), "rgba(255,255,255,.035)");
-    strokePath(road, 3, "rgba(255,255,255,.05)");
-    // Orilla blanca continua.
-    strokePath(road, road.width - 12, "rgba(214,210,190,.34)");
-    strokePath(road, road.width - 18, residential ? palette.asphaltDark : palette.asphalt);
-    // Raya central amarilla discontinua.
-    strokePath(road, road.width >= 150 ? 6 : 4, palette.line, [30, 26], false);
+    const w = road.width;
+    if (residential) {
+      // Callecita: una sola raya tenue al centro.
+      strokePath(road, 2, "rgba(214,210,190,.16)", [16, 20]);
+      return;
+    }
+    // Desgaste donde pasan las llantas.
+    strokePath(offsetPath(road, -w * 0.3), 26, "rgba(255,255,255,.03)");
+    strokePath(offsetPath(road, w * 0.3), 26, "rgba(255,255,255,.03)");
+
+    // Orilla blanca continua de cada lado.
+    strokePath(offsetPath(road, -(w / 2 - 11)), 3, "rgba(222,218,198,.5)");
+    strokePath(offsetPath(road, w / 2 - 11), 3, "rgba(222,218,198,.5)");
+
+    const lanes = w >= 150 ? 3 : w >= 120 ? 2 : 1;
+    // Divisiones de carril discontinuas.
+    if (lanes > 1) {
+      for (let i = 1; i < lanes; i += 1) {
+        const off = (w / 2 - 14) * (i / lanes);
+        strokePath(offsetPath(road, -off), 3, "rgba(226,222,204,.4)", [26, 30]);
+        strokePath(offsetPath(road, off), 3, "rgba(226,222,204,.4)", [26, 30]);
+      }
+    }
+
+    if (w >= 150) {
+      // Camellón: la avenida ancha se lee como avenida y no como pista vacía.
+      strokePath(road, 22, "#7f7869");
+      strokePath(road, 16, "#4f6b45");
+      strokePath(road, 5, "#5f7f52", [22, 26]);
+      strokePath(road, 26, "rgba(0,0,0,.22)", [2, 46]);
+    } else {
+      // Doble raya amarilla continua.
+      strokePath(offsetPath(road, -3), 3, palette.line);
+      strokePath(offsetPath(road, 3), 3, palette.line);
+    }
   }
 
   function drawRoad(road, residential = false) {
@@ -6451,6 +6752,8 @@
       buildings,
       roads,
       residentialRoads,
+      raceRoute,
+      pointOnRoad,
       rectTouchesRoad,
       policeOfficers,
       policeUnits,

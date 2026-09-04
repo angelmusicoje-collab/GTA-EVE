@@ -168,8 +168,8 @@ closePanel();
 debug.state.player.x = 450;
 debug.state.player.y = 595;
 use.listeners.get("pointerdown")({ preventDefault() {} });
-debug.state.player.x = 4465;
-debug.state.player.y = 2092;
+debug.state.player.x = poi.bank.x;
+debug.state.player.y = poi.bank.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 debug.state.player.x = 450;
 debug.state.player.y = 205;
@@ -258,8 +258,8 @@ if (!elementFor("#objective-text").textContent.includes("HUIR")) throw new Error
 
 debug.state.inVehicle = true;
 debug.state.vehicleKind = "truck";
-debug.state.truck.x = 2240;
-debug.state.truck.y = 3150;
+debug.state.truck.x = poi.escape.x;
+debug.state.truck.y = poi.escape.y;
 simulatedNow += 50;
 nextFrame(simulatedNow);
 for (let index = 0; index < 3; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
@@ -280,8 +280,8 @@ use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 4; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 if (!elementFor("#objective-text").textContent.includes("LOTE")) throw new Error("Fede no reveló la ubicación del Sentra");
 
-debug.state.player.x = 1210;
-debug.state.player.y = 3260;
+debug.state.player.x = poi.fedeLot.x;
+debug.state.player.y = poi.fedeLot.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 3; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 if (debug.storyEnemies.length !== 5 || !elementFor("#objective-text").textContent.includes("CHOLOS")) throw new Error("El lote no inició la pelea por el Sentra");
@@ -316,8 +316,8 @@ const rochiAfterFede = debug.state.rochi.cash;
 if (debug.settleFedeReward() !== false || debug.state.money !== moneyAfterFede || debug.state.rochi.cash !== rochiAfterFede) throw new Error("La recompensa de Fede puede cobrarse dos veces");
 if (!elementFor("#objective-text").textContent.includes("CBTIS 19")) throw new Error("Devolver el Sentra no abrió la misión Faltistas");
 
-debug.state.player.x = 5380;
-debug.state.player.y = 1565;
+debug.state.player.x = poi.cbtis.x;
+debug.state.player.y = poi.cbtis.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 debug.state.player.x = 450;
 debug.state.player.y = 205;
@@ -356,8 +356,8 @@ debug.state.player.y = 205;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 2; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 debug.state.story.step = 2;
-debug.state.player.x = 4465;
-debug.state.player.y = 2092;
+debug.state.player.x = poi.bank.x;
+debug.state.player.y = poi.bank.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 debug.state.player.x = 450;
 debug.state.player.y = 205;
@@ -370,8 +370,8 @@ use.listeners.get("pointerdown")({ preventDefault() {} });
 
 debug.startCorralonMission();
 for (let index = 0; index < 3; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
-debug.state.player.x = 5985;
-debug.state.player.y = 835;
+debug.state.player.x = poi.corralon.x;
+debug.state.player.y = poi.corralon.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 3; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 if (!debug.state.story.bike || !elementFor("#objective-text").textContent.includes("MOTO")) throw new Error("Entrar al corralón no reveló la moto de Rochi");
@@ -452,5 +452,20 @@ if (!debug.state.jail.active) throw new Error("Morir debería mandar a Eve a los
 debug.state.jail.active = false;
 debug.state.health = 100;
 debug.state.wanted = 0;
+
+// Regresión de trazado: la red vial tiene que servir para manejar.
+const ring = debug.roads.find((road) => road.ring);
+if (!ring) throw new Error("No hay anillo periférico: se pierde el circuito de carreras");
+const ringStart = ring.points[0];
+const ringEnd = ring.points[ring.points.length - 1];
+if (Math.hypot(ringStart[0] - ringEnd[0], ringStart[1] - ringEnd[1]) > 1) throw new Error("El anillo no cierra: no se puede dar la vuelta completa");
+if (debug.residentialRoads.length < 8) throw new Error(`Quedaron muy pocas calles secundarias (${debug.residentialRoads.length})`);
+if (debug.roadIntersections.length < 20) throw new Error("Faltan cruces: la cuadrícula no está conectada");
+if (debug.urbanBuildings.length < 120) throw new Error(`La ciudad quedó despoblada (${debug.urbanBuildings.length} construcciones)`);
+
+// La carrera debe correr sobre el anillo, no por terreno suelto.
+for (const point of debug.raceRoute) {
+  if (!debug.pointOnRoad(point.x, point.y, 30)) throw new Error("Una meta de la carrera quedó fuera de la calle");
+}
 
 console.log(`Prueba de ejecución terminada: historia completa, ${debug.urbanBuildings.length} edificios urbanos, ${debug.traffic.length} vehículos, rutinas civiles y colisiones correctas.`);
