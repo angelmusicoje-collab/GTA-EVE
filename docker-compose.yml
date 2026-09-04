@@ -1,0 +1,7 @@
+services:
+  eve-gta:
+    build: .
+    container_name: eve-gta
+    restart: unless-stopped
+    ports:
+      - "8080:80"

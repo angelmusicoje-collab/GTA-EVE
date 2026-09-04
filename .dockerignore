@@ -1,0 +1,7 @@
+.git
+.gitignore
+tests
+README.md
+GAME_BIBLE.md
+*.log
+

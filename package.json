@@ -1,0 +1,10 @@
+{
+  "name": "eve-gta",
+  "version": "0.5.1",
+  "private": true,
+  "description": "Sandbox urbano cenital ambientado en Villa de Álvarez y Colima.",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "test": "node --check game.js && node tests/static-check.mjs && node tests/runtime-smoke.mjs"
+  }
+}

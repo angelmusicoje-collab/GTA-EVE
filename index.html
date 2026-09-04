@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#080a0d" />
+    <meta
+      name="description"
+      content="EVE GTA: sandbox urbano cenital ambientado en una Colima viva, absurda y peligrosa."
+    />
+    <title>EVE GTA</title>
+    <link rel="stylesheet" href="styles.css?v=0.5.1" />
+  </head>
+  <body>
+    <main id="game-shell" aria-label="EVE GTA">
+      <canvas id="game" aria-label="Área de juego"></canvas>
+
+      <section id="hud" aria-live="polite">
+        <div class="status-panel">
+          <div class="bar-row">
+            <span>VIDA</span>
+            <div class="bar-track"><div id="health-fill" class="bar-fill health"></div></div>
+          </div>
+          <div class="bar-row">
+            <span>ENERGÍA</span>
+            <div class="bar-track"><div id="energy-fill" class="bar-fill energy"></div></div>
+          </div>
+          <div class="bar-row armor-row">
+            <span>BLINDAJE</span>
+            <div class="bar-track"><div id="armor-fill" class="bar-fill armor"></div></div>
+          </div>
+        </div>
+
+        <div class="world-status">
+          <strong id="money">$25</strong>
+          <span id="period">ATARDECER</span>
+          <span id="clock">18:24</span>
+        </div>
+
+        <div class="hud-actions">
+          <button id="phone-btn" class="square-btn phone-btn" aria-label="Abrir celular">▯</button>
+          <button id="sound-btn" class="square-btn" aria-label="Activar o silenciar sonido">♪</button>
+        </div>
+
+        <div id="mission-card" class="mission-card">
+          <span id="mission-index">TUTORIAL</span>
+          <strong id="mission-title">Que Stif se divierta</strong>
+          <span class="mission-icon" aria-hidden="true">▦</span>
+        </div>
+
+        <canvas id="minimap" width="224" height="132" aria-label="Minimapa"></canvas>
+        <div id="wanted" class="wanted" aria-label="Nivel de búsqueda">☆ ☆ ☆ ☆ ☆</div>
+        <div id="equipment" class="equipment">
+          <span id="weapon-name">PUÑOS</span>
+          <span id="ammo-count">∞</span>
+          <span id="fuel-status">GAS 100%</span>
+        </div>
+      </section>
+
+      <div id="objective" class="objective" aria-live="assertive">
+        <span class="objective-star">✦</span>
+        <span id="objective-text">IR AL JARDÍN DEL PISTO</span>
+      </div>
+
+      <div id="hint" class="hint">La camioneta de Eve está marcada en el mapa</div>
+      <div id="area-banner" class="area-banner" aria-live="polite"></div>
+      <div id="gps-hud" class="gps-hud hidden" aria-live="polite">
+        <span>GPS</span>
+        <strong id="gps-street">CALCULANDO RUTA</strong>
+        <small id="gps-distance">0 m</small>
+      </div>
+      <div id="radio-hud" class="radio-hud hidden" aria-live="polite">
+        <strong id="radio-station">RADIO APAGADA</strong>
+        <span id="radio-track">Sin señal</span>
+      </div>
+
+      <section id="mobile-controls" aria-label="Controles táctiles">
+        <div id="joystick" class="joystick" aria-label="Palanca de movimiento">
+          <span class="arrow up">▲</span>
+          <span class="arrow right">▶</span>
+          <span class="arrow down">▼</span>
+          <span class="arrow left">◀</span>
+          <div id="joystick-knob" class="joystick-knob"></div>
+        </div>
+
+        <div class="action-buttons">
+          <button id="use-btn" class="action-btn use-btn">
+            <span>✦</span>
+            <strong>USAR</strong>
+          </button>
+          <button id="run-btn" class="action-btn run-btn">
+            <span>»</span>
+            <strong id="run-label">CORRER</strong>
+          </button>
+          <button id="punch-btn" class="action-btn punch-btn">
+            <span>✊</span>
+            <strong id="attack-label">PEGAR</strong>
+          </button>
+        </div>
+      </section>
+
+      <div id="keyboard-help" class="keyboard-help">WASD mover · E usar · Shift correr · Espacio atacar · Q cambiar arma</div>
+
+      <section id="dialogue" class="dialogue hidden" aria-live="assertive">
+        <div id="dialogue-portrait" class="portrait" aria-hidden="true">S</div>
+        <div>
+          <strong id="dialogue-name">STIF</strong>
+          <p id="dialogue-text"></p>
+          <small>Pulsa USAR para continuar</small>
+        </div>
+      </section>
+
+      <section id="phone" class="phone-overlay hidden" aria-label="Celular de Eve">
+        <div class="phone-screen">
+          <header>
+            <span id="phone-clock">18:24</span>
+            <strong>EVE</strong>
+            <button id="phone-close" aria-label="Cerrar celular">×</button>
+          </header>
+          <div class="phone-content">
+            <nav id="phone-apps" class="phone-app-grid" aria-label="Aplicaciones">
+              <button data-phone-app="mission"><span>✦</span><strong>Misión</strong></button>
+              <button data-phone-app="map"><span>⌖</span><strong>Mapa</strong></button>
+              <button data-phone-app="inventory"><span>▣</span><strong>Mochila</strong></button>
+              <button data-phone-app="didi"><span>🌮</span><strong>Didi</strong></button>
+              <button data-phone-app="raffle"><span>◆</span><strong>Rifas</strong></button>
+              <button data-phone-app="bank"><span>$</span><strong>Banco</strong></button>
+              <button data-phone-app="news"><span>▤</span><strong>Noticias</strong></button>
+              <button data-phone-app="camera"><span>◎</span><strong>Cámara</strong></button>
+              <button data-phone-app="radio"><span>♫</span><strong>Radio</strong></button>
+              <button data-phone-app="settings"><span>⚙</span><strong>Ajustes</strong></button>
+            </nav>
+            <div id="phone-app-view" class="phone-app-view">
+              <strong>Misión actual</strong>
+              <p id="phone-objective">Ir al Jardín del Pisto</p>
+            </div>
+            <button id="resume-btn" class="phone-primary">VOLVER AL JUEGO</button>
+            <button id="restart-btn" class="phone-secondary">REINICIAR HISTORIA</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="start-screen" class="start-screen">
+        <div class="start-noise"></div>
+        <div class="start-content">
+          <span class="eyebrow">PARTIDA RECUPERADA</span>
+          <h1>EVE<br /><em>GTA</em></h1>
+          <p>Colima · Que Stif se divierta</p>
+          <button id="start-btn">JUGAR</button>
+          <small>Mejor en pantalla completa y con audífonos</small>
+        </div>
+      </section>
+
+      <section id="mission-complete" class="mission-complete hidden" aria-live="assertive">
+        <span>MISIÓN COMPLETADA</span>
+        <strong id="mission-complete-title">QUE STIF SE DIVIERTA</strong>
+        <small id="mission-complete-subtitle">MUNDO LIBRE DESBLOQUEADO</small>
+      </section>
+
+      <section id="action-panel" class="action-panel hidden" aria-live="polite">
+        <header>
+          <div>
+            <span id="panel-kicker">EVE GTA</span>
+            <h2 id="panel-title">INTERACCIÓN</h2>
+          </div>
+          <button id="panel-close" aria-label="Cerrar">×</button>
+        </header>
+        <p id="panel-copy"></p>
+        <div id="panel-actions" class="panel-actions"></div>
+      </section>
+
+      <section id="separos" class="separos hidden" aria-live="assertive">
+        <div class="cell-bars" aria-hidden="true"></div>
+        <span>SEPAROS</span>
+        <strong>Por andar de pinche vaga</strong>
+        <p>Te quitaron las armas y la mitad del efectivo.</p>
+        <b id="jail-countdown">10</b>
+      </section>
+
+      <div id="news-flash" class="news-flash hidden">
+        <strong>ÚLTIMA HORA</strong>
+        <span id="news-flash-text">Conductora desquiciada convierte Colima en estacionamiento.</span>
+      </div>
+      <input id="save-import" class="hidden" type="file" accept="application/json,.json" />
+    </main>
+
+    <script src="game.js?v=0.5.1"></script>
+  </body>
+</html>
