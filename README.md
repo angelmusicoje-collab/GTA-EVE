@@ -2,7 +2,18 @@
 
 Sandbox urbano 2D cenital para navegador, ambientado en una versión comprimida y jugable de Colima/Villa de Álvarez. Conserva la lectura visual de los primeros GTA, controles móviles y humor local.
 
-**Versión actual:** 0.7.0. Incluye el tutorial completo, cinco misiones de historia, el encargo del corralón, interiores jugables, radio procedural y navegación vial.
+**Versión actual:** 0.8.0. Incluye el tutorial completo, cinco misiones de historia, el encargo del corralón, interiores jugables, radio procedural y navegación vial.
+
+## Novedades de la 0.8.0
+
+- **Se maneja como carro, no como tanque.** Modelo con inercia y derrape:
+  **freno de mano** (Espacio o el botón FRENO), marcas de llanta, humo y
+  velocímetro. Antes el carro giraba en el sitio y no se despegaba nunca.
+- **Los arrancones tienen rivales de verdad**: cuatro corredores con nombre
+  que recorren el circuito, cuenta regresiva y tu posición en vivo. El lugar
+  final es el real, no una tabla de tiempos.
+- **Sirena de dos tonos** que aprieta con las estrellas y sube según qué tan
+  cerca traigas a la patrulla.
 
 ## Novedades de la 0.7.0
 
@@ -81,7 +92,8 @@ Abre `http://localhost:8080`.
 | Mover / conducir | WASD o flechas | Palanca rosa |
 | Usar / entrar / salir | E | USAR |
 | Correr / acelerar | Shift | CORRER / ACELERAR |
-| Atacar | Espacio | ATACAR |
+| Atacar (a pie) | Espacio | PEGAR |
+| Freno de mano (manejando) | Espacio | FRENO |
 | Cambiar arma | Q | Mochila del celular |
 | Cambiar estación | R | Aplicación Radio |
 | Celular | P o Escape | Botón amarillo |

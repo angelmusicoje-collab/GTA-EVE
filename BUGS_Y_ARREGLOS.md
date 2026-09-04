@@ -287,8 +287,9 @@ tocó.
 
 Para que no haya sorpresas:
 
-- **Los arrancones siguen abriendo un panel** para la inscripción y la apuesta.
-  No tiene caseta con interior. Se puede hacer, no se hizo.
+- **Los arrancones siguen abriendo un panel** para la inscripción y la apuesta
+  (la carrera en sí ya tiene rivales, cuenta regresiva y posición en vivo). No
+  hay caseta con interior. Se puede hacer, no se hizo.
 - **Didi, banco por celular, cámara y ajustes siguen siendo pantallas de
   teléfono.** Ahí un menú es lo correcto, no se tocó la estructura.
 - **El audio no se tocó.** Sigue siendo la música procedural de 8 bits que ya
@@ -448,3 +449,90 @@ esquinas.
 - **La cámara se abre al acelerar.** A pie se ven 470 unidades de alto; a fondo
   llega a 760, para ver la curva que viene. Era imposible correr viendo tan
   poco.
+
+---
+
+# Tercera ronda: cómo se siente manejar
+
+---
+
+## 27. El carro se movía como tanque, no como carro
+
+**Qué pasaba.** El modelo era: apunta y avanza en línea recta hacia donde
+apuntas. Sin inercia, sin peso, sin derrape. Las curvas se tomaban girando en
+el sitio y el carro cambiaba de dirección al instante. Para un juego que se
+trata de carreras y persecuciones, eso es lo que más se sentía mal.
+
+**Cómo quedó.** Modelo con vector de velocidad separado del rumbo:
+
+- La velocidad se guarda como vector y se descompone en **avance** y
+  **deslizamiento lateral** respecto a hacia dónde apunta el carro.
+- El agarre lateral come el deslizamiento poco a poco. Sobre asfalto agarra
+  mucho; fuera del asfalto agarra menos; **con freno de mano casi no agarra** y
+  el carro se va de atrás.
+- Se gira menos a alta velocidad, salvo con el freno de mano puesto.
+- **Freno de mano**: Espacio en teclado, botón FRENO en pantalla. El botón
+  cambia de PEGAR a FRENO al subirte, porque `punch()` ya bloqueaba atacar
+  desde el vehículo: esa tecla no hacía nada manejando.
+- Derrapar deja **marcas de llanta** en el piso (se borran en 9 segundos) y
+  suelta humo.
+- La cámara vibra al ir a fondo.
+- **Velocímetro** en el HUD, en ámbar arriba de 150 y en rosa al derrapar.
+
+---
+
+## 28. Mi primer modelo de derrape no derrapaba
+
+**Qué pasaba.** La primera versión medía el deslizamiento lateral, luego giraba
+el volante, y luego recomponía la velocidad con el rumbo nuevo usando los
+mismos valores. El resultado: el vector de velocidad giraba pegado al carro y
+**nunca se despegaba**. Con el freno de mano puesto y a 141 km/h el
+deslizamiento medido daba exactamente cero.
+
+**Por qué.** El orden. Hay que girar primero y medir después, porque el
+deslizamiento *es* la diferencia entre hacia dónde apunta el carro y hacia
+dónde iba ya.
+
+**Cómo quedó.** Se gira, después se descompone contra el rumbo nuevo, después
+se aplica el agarre. Mismo caso de prueba: 278 de deslizamiento y 46 marcas de
+llanta.
+
+Hay una prueba de regresión que da un volantazo con freno de mano y falla si no
+hay derrape ni marcas.
+
+---
+
+## 29. La carrera no tenía rivales
+
+**Qué pasaba.** `finishRace()` calculaba tu lugar comparando tu tiempo contra
+umbrales fijos (`< 27s` = primero, `< 36s` = segundo...). No había contra quién
+correr: dabas la vuelta solo y el juego te inventaba un puesto.
+
+**Cómo quedó.** Cuatro corredores con nombre y color que recorren el circuito
+de verdad: se les ve, se les rebasa, se les estorba y chocan contra los muros.
+Cada uno con velocidad punta y pericia distintas. El lugar final es el real:
+cuántos cruzaron la meta antes que tú.
+
+Además hay **cuenta regresiva** (3, 2, 1, ¡ARRE!) en la que nadie arranca, y el
+puesto en vivo se muestra al cruzar cada aro.
+
+---
+
+## 30. La sirena era un pitido plano
+
+**Qué pasaba.** Un solo tono cuadrado cada 0.42 segundos, con el mismo volumen
+sin importar si la patrulla iba a diez metros o a diez cuadras.
+
+**Cómo quedó.** Sirena de dos tonos que aprieta el ritmo con las estrellas y
+sube de volumen según qué tan cerca esté la patrulla o el policía a pie más
+próximo.
+
+---
+
+## 31. El tráfico reciclado se apilaba
+
+**Qué pasaba.** Al reciclar los carros lejanos cerca de Eve, a veces caían
+encima de otro y se atoraban en fila.
+
+**Cómo quedó.** Antes de soltar un carro se revisa que no haya otro a menos de
+96 de distancia, y la densidad bajó de 64 a 48 vehículos.

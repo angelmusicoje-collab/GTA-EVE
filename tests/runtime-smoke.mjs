@@ -232,6 +232,14 @@ debug.state.player.y = poi.race.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 elementFor("#panel-actions").children[0].click();
 let simulatedNow = performance.now() + 100;
+// La carrera arranca con cuenta regresiva: hay que dejarla correr antes de
+// empezar a cruzar aros, si no el jugador "gana" antes del banderazo.
+for (let tick = 0; tick < 90; tick += 1) {
+  simulatedNow += 50;
+  nextFrame(simulatedNow);
+}
+if (debug.state.race.countdown > 0) throw new Error("La cuenta regresiva de la carrera no terminó");
+if (!debug.racers.length) throw new Error("La carrera arrancó sin rivales");
 for (const point of debug.raceRoute.slice(1)) {
   debug.state.truck.x = point.x;
   debug.state.truck.y = point.y;
@@ -467,5 +475,40 @@ if (debug.urbanBuildings.length < 120) throw new Error(`La ciudad quedó despobl
 for (const point of debug.raceRoute) {
   if (!debug.pointOnRoad(point.x, point.y, 30)) throw new Error("Una meta de la carrera quedó fuera de la calle");
 }
+
+// Regresión de manejo: el freno de mano tiene que producir derrape de verdad.
+// La primera versión del modelo rotaba el vector de velocidad junto con el
+// volante, así que el deslizamiento lateral siempre daba cero.
+debug.state.scene = "city";
+debug.state.jail.active = false;
+debug.state.wanted = 0;
+debug.state.inVehicle = true;
+debug.state.vehicleKind = "truck";
+debug.state.truck.destroyed = false;
+debug.state.truck.fuel = 100;
+debug.state.truck.health = 100;
+const ringRoad = debug.roads.find((road) => road.ring);
+const straight = ringRoad.points[0];
+debug.state.truck.x = straight[0] + 600;
+debug.state.truck.y = straight[1];
+debug.state.truck.angle = Math.PI / 2;
+debug.state.truck.vx = 300;
+debug.state.truck.vy = 0;
+debug.state.truck.speed = 300;
+debug.skidMarks.length = 0;
+
+// Volantazo con freno de mano puesto.
+debug.input.handbrake = true;
+debug.input.joystick.x = 1;
+debug.input.joystick.y = 0;
+for (let tick = 0; tick < 24; tick += 1) {
+  simulatedNow += 16;
+  nextFrame(simulatedNow);
+}
+debug.input.handbrake = false;
+debug.input.joystick.x = 0;
+if (!(debug.state.truck.slip > 25)) throw new Error(`El freno de mano no produce derrape (deslizamiento ${Math.round(debug.state.truck.slip || 0)})`);
+if (!debug.skidMarks.length) throw new Error("Derrapar no dejó marcas de llanta");
+debug.state.inVehicle = false;
 
 console.log(`Prueba de ejecución terminada: historia completa, ${debug.urbanBuildings.length} edificios urbanos, ${debug.traffic.length} vehículos, rutinas civiles y colisiones correctas.`);

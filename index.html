@@ -9,7 +9,7 @@
       content="EVE GTA: sandbox urbano cenital ambientado en una Colima viva, absurda y peligrosa."
     />
     <title>EVE GTA</title>
-    <link rel="stylesheet" href="styles.css?v=0.7.0" />
+    <link rel="stylesheet" href="styles.css?v=0.8.0" />
   </head>
   <body>
     <main id="game-shell" aria-label="EVE GTA">
@@ -54,6 +54,7 @@
           <span id="weapon-name">PUÑOS</span>
           <span id="ammo-count">∞</span>
           <span id="fuel-status">GAS 100%</span>
+          <span id="speed-status" class="speed hidden">0 KM/H</span>
         </div>
       </section>
 
@@ -99,7 +100,7 @@
         </div>
       </section>
 
-      <div id="keyboard-help" class="keyboard-help">WASD mover · E usar · Shift correr · Espacio atacar · Q cambiar arma</div>
+      <div id="keyboard-help" class="keyboard-help">WASD mover · E usar · Shift correr · Espacio pegar o freno · Q cambiar arma</div>
 
       <section id="dialogue" class="dialogue hidden" aria-live="assertive">
         <div id="dialogue-portrait" class="portrait" aria-hidden="true">S</div>
@@ -184,6 +185,6 @@
       <input id="save-import" class="hidden" type="file" accept="application/json,.json" />
     </main>
 
-    <script src="game.js?v=0.7.0"></script>
+    <script src="game.js?v=0.8.0"></script>
   </body>
 </html>

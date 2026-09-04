@@ -629,7 +629,7 @@
   const trafficColors = ["#cc4c48", "#e6c852", "#3e86b8", "#d7d3c6", "#b860a7", "#75a75a", "#e29c42", "#7e65ad", "#4f827c", "#b94a4a"];
   // Se reparte el tráfico entre todas las vialidades existentes en vez de una
   // lista de índices a mano, que apuntaba a calles que ya no existen.
-  const trafficRoads = Array.from({ length: 64 }, (_, index) => index % roads.length);
+  const trafficRoads = Array.from({ length: 48 }, (_, index) => index % roads.length);
   const traffic = trafficRoads.map((road, index) => {
     const cruiseSpeed = 0.0105 + (index % 6) * 0.00165;
     return {
@@ -797,7 +797,7 @@
   const defaultState = JSON.parse(JSON.stringify(state));
   const camera = { x: 0, y: 0, zoom: 1 };
   const view = { width: 800, height: 600, dpr: 1, bufferWidth: 480, bufferHeight: RENDER_HEIGHT, pixelScale: 2 };
-  const input = { keys: new Set(), joystick: { x: 0, y: 0 }, run: false };
+  const input = { keys: new Set(), joystick: { x: 0, y: 0 }, run: false, handbrake: false };
   const particles = [];
   let joystickPointer = null;
   let lastTime = performance.now();
@@ -810,6 +810,7 @@
   let radioStep = -1;
   let radioHudTimer = 0;
   let sirenClock = 0;
+  let sirenPhase = false;
   let ambientClock = 3;
   let pendingBinding = null;
   let gpsCache = { key: "", fromX: 0, fromY: 0, path: [], age: 99 };
@@ -1317,11 +1318,46 @@
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // MANEJO
+  // El modelo anterior era de tanque: el carro apuntaba y se movía en línea
+  // recta hacia donde apuntaba. No había inercia, no había derrape y las
+  // curvas se tomaban girando en el sitio. Este guarda la velocidad como
+  // vector y la separa en avance y deslizamiento lateral, que es lo que
+  // permite derrapar, contravolantear y sentir el peso del carro.
+  // ---------------------------------------------------------------------------
+  const skidMarks = [];
+
+  function pushSkid(vehicle, strength) {
+    const heading = vehicle.angle - Math.PI / 2;
+    const side = heading + Math.PI / 2;
+    const halfTrack = 17;
+    for (const sign of [-1, 1]) {
+      skidMarks.push({
+        x: vehicle.x + Math.cos(side) * halfTrack * sign - Math.cos(heading) * 22,
+        y: vehicle.y + Math.sin(side) * halfTrack * sign - Math.sin(heading) * 22,
+        angle: heading,
+        life: 9,
+        strength: clamp(strength, 0.2, 1),
+      });
+    }
+    while (skidMarks.length > 420) skidMarks.shift();
+  }
+
+  function updateSkidMarks(dt) {
+    for (let i = skidMarks.length - 1; i >= 0; i -= 1) {
+      skidMarks[i].life -= dt;
+      if (skidMarks[i].life <= 0) skidMarks.splice(i, 1);
+    }
+  }
+
   function updateTruck(dt) {
     const vehicle = activeVehicle();
     if (vehicle.destroyed) {
       state.inVehicle = false;
       vehicle.speed = 0;
+      vehicle.vx = 0;
+      vehicle.vy = 0;
       showHint(state.vehicleKind === "truck" ? "La troca quedó hecha mierda. Sigue marcada para repararla." : "Ese carro ya dio lo que tenía que dar.", 1400);
       return;
     }
@@ -1330,49 +1366,102 @@
     const throttle = vehicle.fuel > 0 ? requestedThrottle : 0;
     const steer = move.x;
     const boost = actionPressed("run") || input.keys.has("ShiftRight");
+    const handbrake = Boolean(input.handbrake);
     const tunePower = state.vehicleKind === "truck" ? 1 + state.truck.engine * 0.1 : 0.92;
     const handlingPower = state.vehicleKind === "truck" ? 1 + state.truck.handling * 0.12 : 0.92;
-    const onRoad = pointOnRoad(vehicle.x, vehicle.y, -6) || (distance(vehicle, POI.race) < 390);
-    const acceleration = (boost ? 260 : 185) * tunePower * (onRoad ? 1 : 0.78);
-    const maxSpeed = (boost ? 380 : 285) * tunePower * (onRoad ? 1 : 0.73);
+    const onRoad = pointOnRoad(vehicle.x, vehicle.y, -6);
+    const acceleration = (boost ? 300 : 205) * tunePower * (onRoad ? 1 : 0.7);
+    const maxSpeed = (boost ? 415 : 300) * tunePower * (onRoad ? 1 : 0.68);
 
-    if (Math.abs(throttle) > 0.05) {
-      vehicle.speed += throttle * acceleration * dt;
-    } else {
-      vehicle.speed *= Math.pow(onRoad ? 0.12 : 0.055, dt);
+    if (!Number.isFinite(vehicle.vx)) {
+      const h0 = vehicle.angle - Math.PI / 2;
+      vehicle.vx = Math.cos(h0) * (vehicle.speed || 0);
+      vehicle.vy = Math.sin(h0) * (vehicle.speed || 0);
     }
-    vehicle.speed = clamp(vehicle.speed, -115, maxSpeed);
 
-    if (Math.abs(vehicle.speed) > 4) {
-      const steerDirection = vehicle.speed >= 0 ? 1 : -1;
-      const speedRatio = clamp(Math.abs(vehicle.speed) / Math.max(1, maxSpeed), 0, 1);
-      const steeringGrip = lerp(1.78, 0.92, speedRatio) * clamp(Math.abs(vehicle.speed) / 48, 0.32, 1);
-      vehicle.angle += steer * steerDirection * steeringGrip * handlingPower * state.settings.steeringSensitivity * (onRoad ? 1 : 0.82) * dt;
-      const dx = Math.cos(vehicle.angle - Math.PI / 2) * vehicle.speed * dt;
-      const dy = Math.sin(vehicle.angle - Math.PI / 2) * vehicle.speed * dt;
-      const nextX = vehicle.x + dx;
-      const nextY = vehicle.y + dy;
-      if (!cityBlocked(nextX, nextY, vehicle.radius, true)) {
-        vehicle.x = nextX;
-        vehicle.y = nextY;
-        vehicle.fuel = clamp(vehicle.fuel - Math.abs(vehicle.speed) * dt * 0.00013, 0, 100);
-        ramNpcs(vehicle);
-      } else {
-        const impact = Math.abs(vehicle.speed);
-        vehicle.speed *= -0.18;
-        damageEve(Math.min(8, impact * 0.02));
-        vehicle.health = clamp(vehicle.health - Math.min(18, impact * 0.055) / (1 + (vehicle.armor || 0) * 0.18), 0, 100);
+    // ORDEN IMPORTANTE: primero se gira el volante, y solo después se mide
+    // cuánto del movimiento quedó de lado respecto al nuevo rumbo. Si se mide
+    // antes y se recompone después, el vector de velocidad gira pegado al
+    // carro y nunca se despega: no hay derrape posible.
+    const previousSpeed = vehicle.vx * Math.cos(vehicle.angle - Math.PI / 2) + vehicle.vy * Math.sin(vehicle.angle - Math.PI / 2);
+    const speedRatio = clamp(Math.abs(previousSpeed) / Math.max(1, maxSpeed), 0, 1);
+    if (Math.abs(previousSpeed) > 5) {
+      // Se gira menos a alta velocidad, salvo con el freno de mano puesto.
+      const turnRate = (handbrake ? 2.9 : lerp(2.4, 1.05, speedRatio)) * handlingPower * state.settings.steeringSensitivity;
+      vehicle.angle += steer * Math.sign(previousSpeed) * turnRate * dt;
+    }
+
+    const fx = Math.cos(vehicle.angle - Math.PI / 2);
+    const fy = Math.sin(vehicle.angle - Math.PI / 2);
+    let forward = vehicle.vx * fx + vehicle.vy * fy;
+    let lateral = vehicle.vx * -fy + vehicle.vy * fx;
+
+    if (Math.abs(throttle) > 0.05) forward += throttle * acceleration * dt;
+    else forward *= Math.pow(onRoad ? 0.34 : 0.14, dt);
+    if (handbrake) forward *= Math.pow(0.3, dt);
+    forward = clamp(forward, -125, maxSpeed);
+
+    // Agarre lateral. Con freno de mano casi se pierde y el carro se va de
+    // atrás; fuera del asfalto también agarra menos.
+    const gripPerSecond = handbrake ? 0.55 : onRoad ? 0.0012 : 0.03;
+    lateral *= Math.pow(gripPerSecond, dt);
+
+    vehicle.vx = fx * forward + -fy * lateral;
+    vehicle.vy = fy * forward + fx * lateral;
+    vehicle.speed = forward;
+    vehicle.slip = Math.abs(lateral);
+
+    // Llanta quemada: marca en el piso y humo.
+    vehicle.skidTimer = (vehicle.skidTimer || 0) - dt;
+    const slipping = vehicle.slip > 46 || (handbrake && Math.abs(forward) > 70);
+    if (slipping && vehicle.skidTimer <= 0) {
+      vehicle.skidTimer = 0.03;
+      pushSkid(vehicle, clamp(vehicle.slip / 180, 0.25, 1));
+      if (Math.random() < 0.4) {
+        particles.push({
+          x: vehicle.x - fx * 24 + (Math.random() - 0.5) * 22,
+          y: vehicle.y - fy * 24 + (Math.random() - 0.5) * 22,
+          vx: (Math.random() - 0.5) * 40,
+          vy: (Math.random() - 0.5) * 40,
+          life: 0.5 + Math.random() * 0.4,
+          color: "rgba(196,190,178,.55)",
+        });
+      }
+    }
+    // Vibra la cámara al ir a fondo: se siente la velocidad.
+    if (Math.abs(forward) > maxSpeed * 0.82) state.shake = Math.max(state.shake, 0.16);
+
+    const dx = vehicle.vx * dt;
+    const dy = vehicle.vy * dt;
+    let crashed = false;
+    if (!cityBlocked(vehicle.x + dx, vehicle.y, vehicle.radius, true)) vehicle.x += dx;
+    else crashed = true;
+    if (!cityBlocked(vehicle.x, vehicle.y + dy, vehicle.radius, true)) vehicle.y += dy;
+    else crashed = true;
+
+    if (crashed) {
+      const impact = Math.hypot(vehicle.vx, vehicle.vy);
+      vehicle.vx *= -0.14;
+      vehicle.vy *= -0.14;
+      vehicle.speed *= -0.14;
+      if (impact > 60) {
+        damageEve(Math.min(8, impact * 0.02), "un putazo con la troca");
+        vehicle.health = clamp(vehicle.health - Math.min(18, impact * 0.05) / (1 + (vehicle.armor || 0) * 0.18), 0, 100);
         impactParticles(vehicle.x, vehicle.y, "#e9d9ab");
+        shakeCamera(clamp(impact / 260, 0.15, 1));
         sound("crash");
         state.didi.crashes += state.didi.active ? 1 : 0;
         if (state.didi.active) state.didi.rating = clamp(state.didi.rating - 0.7, 1, 5);
         if (vehicle.health <= 0) destroyVehicle(vehicle);
       }
+    } else if (Math.abs(forward) > 6) {
+      vehicle.fuel = clamp(vehicle.fuel - Math.abs(forward) * dt * 0.00013, 0, 100);
+      ramNpcs(vehicle);
     }
+
     state.player.x = vehicle.x;
     state.player.y = vehicle.y;
     state.player.angle = vehicle.angle - Math.PI / 2;
-
   }
 
   function ramNpcs(vehicle) {
@@ -1726,7 +1815,13 @@
       const t = Math.random();
       const position = pathPosition(roads[roadIndex], t);
       const dist = Math.hypot(position.x - focus.x, position.y - focus.y);
-      if (dist < 340 || dist > 900) continue;
+      if (dist < 380 || dist > 1050) continue;
+      let occupied = false;
+      for (const other of traffic) {
+        if (other === car || !Number.isFinite(other.x)) continue;
+        if (Math.hypot(other.x - position.x, other.y - position.y) < 96) { occupied = true; break; }
+      }
+      if (occupied) continue;
       car.road = roadIndex;
       car.t = t;
       car.speed = car.cruiseSpeed;
@@ -3486,38 +3581,150 @@
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // ARRANCONES
+  // Antes no había rivales: el lugar salía de comparar tu tiempo contra unos
+  // umbrales fijos. Corrías solo por el mapa y el juego te inventaba un puesto.
+  // Ahora hay cuatro contrincantes que recorren el circuito de verdad, se les
+  // ve, se les rebasa y se les puede estorbar.
+  // ---------------------------------------------------------------------------
+  const racers = [];
+  const racerNames = ["EL CHAPARRO", "LA GÜERA", "MEMO TURBO", "RAMÓN"];
+  const racerColors = ["#c8433f", "#3f6fa8", "#c9973c", "#7a4d96"];
+
+  function raceTotalCheckpoints() {
+    return raceRoute.length - 1;
+  }
+
+  function spawnRacers() {
+    racers.length = 0;
+    const ring = roads.find((road) => road.ring) || roads[0];
+    for (let i = 0; i < 4; i += 1) {
+      const t = 1 - (i + 1) * 0.004;
+      const position = pathPosition(ring, ((t % 1) + 1) % 1);
+      racers.push({
+        id: `racer-${i}`,
+        name: racerNames[i],
+        color: racerColors[i],
+        x: position.x + Math.cos(position.angle + Math.PI / 2) * ((i - 1.5) * 26),
+        y: position.y + Math.sin(position.angle + Math.PI / 2) * ((i - 1.5) * 26),
+        angle: position.angle + Math.PI / 2,
+        speed: 0,
+        checkpoint: 1,
+        finished: false,
+        finishTime: 0,
+        // Cada quien corre distinto: el más lento se puede rebasar, el más
+        // rápido te obliga a usar el freno de mano en las curvas.
+        topSpeed: 236 + i * 21 + Math.random() * 16,
+        skill: 0.72 + i * 0.06,
+      });
+    }
+  }
+
+  function updateRacers(dt) {
+    for (const racer of racers) {
+      if (racer.finished) continue;
+      const target = raceRoute[racer.checkpoint];
+      if (!target) {
+        racer.finished = true;
+        racer.finishTime = state.race.elapsed;
+        continue;
+      }
+      const desired = Math.atan2(target.y - racer.y, target.x - racer.x);
+      const heading = racer.angle - Math.PI / 2;
+      racer.angle = smoothAngle(heading, desired, clamp(dt * 2.6 * racer.skill, 0, 1)) + Math.PI / 2;
+      const drive = racer.angle - Math.PI / 2;
+      racer.speed = lerp(racer.speed, racer.topSpeed, clamp(dt * 1.1, 0, 1));
+      const nx = racer.x + Math.cos(drive) * racer.speed * dt;
+      const ny = racer.y + Math.sin(drive) * racer.speed * dt;
+      if (!cityBlocked(nx, ny, 24, true)) {
+        racer.x = nx;
+        racer.y = ny;
+      } else {
+        // Se raspa un muro y pierde ritmo, como cualquiera.
+        racer.speed *= 0.55;
+        racer.angle += 0.35;
+      }
+      if (distance(racer, target) < 120) {
+        racer.checkpoint += 1;
+        if (racer.checkpoint >= raceRoute.length) {
+          racer.finished = true;
+          racer.finishTime = state.race.elapsed;
+        }
+      }
+    }
+  }
+
+  function racePosition() {
+    // Se ordena por metas cruzadas y, a igualdad, por quién va más cerca de la
+    // siguiente. Así el puesto en pantalla cambia al rebasar.
+    const focus = getFocus();
+    const mine = { checkpoint: state.race.checkpoint, x: focus.x, y: focus.y, finished: false, finishTime: Infinity };
+    const field = [mine, ...racers];
+    const progress = (entry) => {
+      const target = raceRoute[entry.checkpoint];
+      const gap = target ? distance(entry, target) : 0;
+      return entry.checkpoint * 10000 - gap;
+    };
+    field.sort((a, b) => {
+      if (a.finished !== b.finished) return a.finished ? -1 : 1;
+      if (a.finished && b.finished) return a.finishTime - b.finishTime;
+      return progress(b) - progress(a);
+    });
+    return field.indexOf(mine) + 1;
+  }
+
   function startRace(fee, bet, targetPlace) {
     if (!spendCash(fee + bet)) return;
-    state.race = { active: true, checkpoint: 1, elapsed: 0, fee, bet, targetPlace };
+    state.race = { active: true, checkpoint: 1, elapsed: 0, fee, bet, targetPlace, countdown: 3.2, place: 1 };
+    spawnRacers();
     closePanel();
-    showHint("ARRANQUE · Sigue los aros amarillos", 1800);
+    showHint("¡PREPÁRATE!", 900);
     if (Math.random() < (isNight() ? 0.48 : 0.24)) raiseWanted(1, "Arrancones clandestinos");
     saveGame();
   }
 
   function updateRace(dt) {
     if (!state.race.active || state.scene !== "city") return;
+
+    // Cuenta regresiva: los rivales tampoco arrancan antes.
+    if (state.race.countdown > 0) {
+      const before = Math.ceil(state.race.countdown);
+      state.race.countdown -= dt;
+      const now = Math.ceil(state.race.countdown);
+      if (now !== before) {
+        if (now > 0) { showHint(String(now), 600); sound("deny"); }
+        else { showHint("¡ARRE!", 900); sound("pickup"); }
+      }
+      return;
+    }
+
     state.race.elapsed += dt;
+    updateRacers(dt);
+    state.race.place = racePosition();
+
     const point = raceRoute[state.race.checkpoint];
-    if (point && distance(getFocus(), point) < 92) {
+    if (point && distance(getFocus(), point) < 110) {
       state.race.checkpoint += 1;
       sound("pickup");
       if (state.race.checkpoint >= raceRoute.length) finishRace();
-      else showHint(`ARO ${state.race.checkpoint}/${raceRoute.length - 1}`, 650);
+      else showHint(`ARO ${state.race.checkpoint - 1}/${raceTotalCheckpoints()} · ${state.race.place}º`, 700);
     }
   }
 
   function finishRace() {
     const tutorial = state.stage === 8 && !state.tutorialFlags.race;
-    const adjusted = state.race.elapsed - state.truck.engine * 1.5 - state.truck.handling;
-    const place = adjusted < 27 ? 1 : adjusted < 36 ? 2 : adjusted < 48 ? 3 : 4 + Math.floor(Math.random() * 3);
-    let payout = place === 1 ? 300 : place === 2 ? 185 : place === 3 ? 110 : 0;
+    // El lugar es el real: cuántos rivales cruzaron antes que tú.
+    const ahead = racers.filter((racer) => racer.finished).length;
+    const place = ahead + 1;
+    let payout = place === 1 ? 420 : place === 2 ? 240 : place === 3 ? 130 : 0;
     if (state.race.bet > 0 && place <= state.race.targetPlace) {
       const multiplier = state.race.targetPlace === 3 ? 1.25 : state.race.targetPlace === 2 ? 1.5 : 2;
       payout += Math.floor(state.race.bet * multiplier);
     }
     state.money += payout;
     state.race.active = false;
+    racers.length = 0;
     if (tutorial) {
       state.tutorialFlags.race = true;
       state.stage = 9;
@@ -3533,6 +3740,7 @@
   function abandonRace() {
     if (!state.race.active) return;
     state.race.active = false;
+    racers.length = 0;
     showHint("Abandonaste: inscripción y apuesta perdidas", 1800);
     saveGame();
   }
@@ -5580,8 +5788,23 @@
     ctx.globalAlpha = 1;
   }
 
+  function drawSkidMarks() {
+    for (const mark of skidMarks) {
+      if (!visiblePoint(mark, 60)) continue;
+      ctx.save();
+      ctx.globalAlpha = clamp(mark.life / 9, 0, 1) * 0.8 * mark.strength;
+      ctx.translate(px(mark.x), px(mark.y));
+      ctx.rotate(mark.angle);
+      ctx.fillStyle = "#101216";
+      ctx.fillRect(-5, -3, 11, 5);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
   function drawCity() {
     drawCityGround();
+    drawSkidMarks();
     drawMissionRoute();
     drawRaceCheckpoints();
     for (const tree of trees) {
@@ -5601,6 +5824,11 @@
     queueWorldLabel(3630, 960, "PIEDRA DEL SACRIFICIO", { scale: 1, color: "#bd83ff", range: 380 });
 
     drawTraffic();
+    for (const racer of racers) {
+      if (!visiblePoint(racer, 120)) continue;
+      drawVehicle(racer, { color: racer.color, small: true });
+      queueWorldLabel(racer.x, racer.y - 44, racer.name, { scale: 1, color: racer.color, range: 420 });
+    }
     for (const patrol of patrols) {
       if (visiblePoint(patrol, 100)) drawVehicle(patrol, { police: true, small: true });
     }
@@ -6006,7 +6234,19 @@
     const weapon = weapons[state.equippedWeapon] || weapons.fists;
     $("#weapon-name").textContent = weapon.name;
     $("#ammo-count").textContent = Number.isFinite(weapon.ammo) ? String(state.ammo[state.equippedWeapon] || 0) : "∞";
-    $("#attack-label").textContent = state.equippedWeapon === "fists" ? "PEGAR" : "ATACAR";
+    $("#attack-label").textContent = state.inVehicle ? "FRENO" : state.equippedWeapon === "fists" ? "PEGAR" : "ATACAR";
+    // Velocímetro: sin él no se siente la diferencia entre ir rápido y volar.
+    const speedTag = $("#speed-status");
+    if (state.inVehicle) {
+      const vehicle = activeVehicle();
+      const kmh = Math.round(Math.abs(vehicle.speed || 0) * 0.62);
+      speedTag.textContent = `${kmh} KM/H`;
+      speedTag.classList.remove("hidden");
+      speedTag.classList.toggle("fast", kmh > 150);
+      speedTag.classList.toggle("drift", (vehicle.slip || 0) > 46);
+    } else {
+      speedTag.classList.add("hidden");
+    }
     const vehicle = activeVehicle();
     const vehicleLabel = state.vehicleKind === "fede" ? "SENTRA" : state.vehicleKind === "bike" ? "MOTO" : "GAS";
     $("#fuel-status").textContent = state.inVehicle ? `${vehicleLabel} ${Math.round(vehicle.fuel)}%` : `TROCA ${Math.round(state.truck.health)}%`;
@@ -6046,6 +6286,7 @@
     updateTutorial();
     updateStory(dt);
     updateEveVitals(dt);
+    updateSkidMarks(dt);
     recoverEve();
     updateParticles(dt);
     updateProjectiles(dt);
@@ -6594,8 +6835,18 @@
     }
     sirenClock -= dt;
     if (state.wanted > 0 && state.scene === "city" && sirenClock <= 0) {
-      sirenClock = 0.42;
-      playTone(Math.floor(state.time) % 2 ? 660 : 880, 0.32, "square", 0.012 * state.settings.sfxVolume);
+      // Sirena de dos tonos que aprieta con las estrellas y suena más fuerte
+      // cuando la patrulla ya te respira encima.
+      const focus = getFocus();
+      let closest = Infinity;
+      for (const unit of policeUnits) closest = Math.min(closest, distance(focus, unit));
+      for (const cop of policeOfficers) closest = Math.min(closest, distance(focus, cop));
+      const nearness = Number.isFinite(closest) ? clamp(1 - closest / 900, 0.15, 1) : 0.2;
+      sirenClock = clamp(0.46 - state.wanted * 0.04, 0.22, 0.46);
+      sirenPhase = !sirenPhase;
+      const volume = (0.008 + nearness * 0.016) * state.settings.sfxVolume;
+      playTone(sirenPhase ? 690 : 930, sirenClock * 0.92, "square", volume);
+      playTone(sirenPhase ? 346 : 466, sirenClock * 0.9, "sawtooth", volume * 0.35, 0.02);
     }
     if (!state.inVehicle || station.id === "off") return;
     radioClock += dt;
@@ -6665,7 +6916,21 @@
   runButton.addEventListener("pointerup", releaseRun);
   runButton.addEventListener("pointercancel", releaseRun);
   $("#use-btn").addEventListener("pointerdown", (event) => { event.preventDefault(); interact(); });
-  $("#punch-btn").addEventListener("pointerdown", (event) => { event.preventDefault(); punch(); });
+  const punchButton = $("#punch-btn");
+  punchButton.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    // Manejando este botón es el freno de mano; a pie, el madrazo.
+    if (state.inVehicle) {
+      input.handbrake = true;
+      punchButton.classList.add("pressed");
+    } else punch();
+  });
+  const releaseHandbrake = () => {
+    input.handbrake = false;
+    punchButton.classList.remove("pressed");
+  };
+  punchButton.addEventListener("pointerup", releaseHandbrake);
+  punchButton.addEventListener("pointercancel", releaseHandbrake);
 
   window.addEventListener("keydown", (event) => {
     if (pendingBinding) {
@@ -6688,7 +6953,10 @@
     }
     input.keys.add(event.code);
     if (event.code === state.settings.bindings.use) interact();
-    if (event.code === state.settings.bindings.attack) punch();
+    if (event.code === state.settings.bindings.attack) {
+      if (state.inVehicle) input.handbrake = true;
+      else punch();
+    }
     if (event.code === state.settings.bindings.weapon) cycleWeapon();
     if (event.code === state.settings.bindings.radio) cycleRadio();
     if (event.code === state.settings.bindings.phone || event.code === "Escape") {
@@ -6697,10 +6965,14 @@
       else closePhone();
     }
   });
-  window.addEventListener("keyup", (event) => input.keys.delete(event.code));
+  window.addEventListener("keyup", (event) => {
+    input.keys.delete(event.code);
+    if (event.code === state.settings.bindings.attack) input.handbrake = false;
+  });
   window.addEventListener("blur", () => {
     input.keys.clear();
     input.run = false;
+    input.handbrake = false;
     releaseJoystick();
   });
 
@@ -6753,6 +7025,9 @@
       roads,
       residentialRoads,
       raceRoute,
+      racers,
+      skidMarks,
+      input,
       pointOnRoad,
       rectTouchesRoad,
       policeOfficers,

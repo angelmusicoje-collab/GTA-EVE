@@ -1674,3 +1674,17 @@ button:focus-visible {
   transform: translate(3px, 3px);
   box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.35), 1px 1px 0 rgba(4, 6, 9, 0.6);
 }
+
+/* Velocímetro: cambia de color al ir a fondo y al derrapar. */
+.equipment .speed {
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
+}
+
+.equipment .speed.fast {
+  color: var(--acid);
+}
+
+.equipment .speed.drift {
+  color: var(--pink);
+}
