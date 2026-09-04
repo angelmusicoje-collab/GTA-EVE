@@ -6388,6 +6388,18 @@
     return false;
   }
 
+  // Los civiles y sus destinos (casa, trabajo, ocio) son puntos calculados
+  // sobre las banquetas. Después del reacomodo de la ciudad alguno puede caer
+  // dentro de un edificio y el NPC se queda empujando la pared para siempre.
+  function unstickCrowd() {
+    for (const npc of npcs) {
+      unstick(npc, 12);
+      for (const spot of [npc.home, npc.work, npc.leisure]) {
+        if (spot) unstick(spot, 12);
+      }
+    }
+  }
+
   function loadGame() {
     try {
       let raw = localStorage.getItem(SAVE_KEY);
@@ -6480,6 +6492,7 @@
         unstick(state.truck, state.truck.radius || 31);
         if (state.stolenCar) unstick(state.stolenCar, 28);
         for (const person of [state.stif, state.rochi, state.fede]) unstick(person, 13);
+        unstickCrowd();
       }
       if (state.story.mission === "fede" && state.story.fedeRewardPhase === "gross") showFedeRewardDialogue();
       $("#start-btn").textContent = "CONTINUAR";
@@ -6977,6 +6990,7 @@
   });
 
   $("#start-btn").addEventListener("click", () => {
+    unstickCrowd();
     state.started = true;
     $("#start-screen").classList.add("dismissed");
     lastTime = performance.now();

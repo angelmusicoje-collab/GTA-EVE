@@ -501,13 +501,17 @@ debug.skidMarks.length = 0;
 debug.input.handbrake = true;
 debug.input.joystick.x = 1;
 debug.input.joystick.y = 0;
-for (let tick = 0; tick < 24; tick += 1) {
+// Se mide el pico del deslizamiento durante la maniobra: el valor final varía
+// según en qué cuadro se lea, porque el agarre lo va comiendo.
+let peakSlip = 0;
+for (let tick = 0; tick < 40; tick += 1) {
   simulatedNow += 16;
   nextFrame(simulatedNow);
+  peakSlip = Math.max(peakSlip, debug.state.truck.slip || 0);
 }
 debug.input.handbrake = false;
 debug.input.joystick.x = 0;
-if (!(debug.state.truck.slip > 25)) throw new Error(`El freno de mano no produce derrape (deslizamiento ${Math.round(debug.state.truck.slip || 0)})`);
+if (!(peakSlip > 40)) throw new Error(`El freno de mano no produce derrape (pico de deslizamiento ${Math.round(peakSlip)})`);
 if (!debug.skidMarks.length) throw new Error("Derrapar no dejó marcas de llanta");
 debug.state.inVehicle = false;
 
