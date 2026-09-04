@@ -2,7 +2,50 @@
 
 Sandbox urbano 2D cenital para navegador, ambientado en una versión comprimida y jugable de Colima/Villa de Álvarez. Conserva la lectura visual de los primeros GTA, controles móviles y humor local.
 
-**Versión actual:** 0.5.1. Incluye el tutorial completo, cinco misiones de historia, el encargo del corralón, interiores jugables, radio procedural y navegación vial.
+**Versión actual:** 0.8.0. Incluye el tutorial completo, cinco misiones de historia, el encargo del corralón, interiores jugables, radio procedural y navegación vial.
+
+## Novedades de la 0.8.0
+
+- **Se maneja como carro, no como tanque.** Modelo con inercia y derrape:
+  **freno de mano** (Espacio o el botón FRENO), marcas de llanta, humo y
+  velocímetro. Antes el carro giraba en el sitio y no se despegaba nunca.
+- **Los arrancones tienen rivales de verdad**: cuatro corredores con nombre
+  que recorren el circuito, cuenta regresiva y tu posición en vivo. El lugar
+  final es el real, no una tabla de tiempos.
+- **Sirena de dos tonos** que aprieta con las estrellas y sube según qué tan
+  cerca traigas a la patrulla.
+
+## Novedades de la 0.7.0
+
+- **La ciudad se rehizo para manejar.** Anillo periférico cerrado para dar
+  vueltas completas, ejes rectos largos que se cruzan a escuadra y cuadrícula
+  secundaria para escaparse. El trazado anterior no tenía una sola recta.
+- **El asfalto se lee**: carriles marcados, orillas, camellón en las avenidas
+  anchas y cruces con cebra y semáforo por acceso.
+- **Los arrancones corren sobre el anillo**, una vuelta completa al circuito.
+- **Tráfico por carril** y reciclado cerca de Eve: ya no manejas por una ciudad
+  desierta.
+- **Más pixeles**: la resolución interna subió de 300 a 432 de alto, y la
+  cámara se abre al acelerar para ver la curva que viene.
+- **Manzanas derivadas del trazado**, con grano distinto por cuadra.
+
+## Novedades de la 0.6.0
+
+- **La policía ya no te arresta de un roce.** Ahora te dispara y te embiste; a
+  los separos se llega solo con la vida en cero. Bajan oficiales a pie de las
+  patrullas.
+- **Se ve de pixeles de verdad.** El canvas trabaja a baja resolución y se
+  estira sin suavizado, con fuente de mapa de bits propia.
+- **Calles, edificios y banquetas redibujados** con volumen, textura, ventanas
+  que se prenden de noche, tinacos, puestos y carros estacionados.
+- **Los personajes se distinguen.** Eve y Rochi tienen complexión, peinado y
+  ropa propios; los civiles se generan con variantes.
+- **Rifas, empeño y la tienda de la gasolinera** dejaron de ser menús: se entra
+  caminando y hay dependiente atrás del mostrador.
+- **Se reacomodó la ciudad.** Había 22 edificios plantados encima de avenidas.
+
+`BUGS_Y_ARREGLOS.md` tiene la bitácora completa de qué estaba roto, por qué y
+cómo quedó, además de lo que quedó pendiente.
 
 ## Lo que ya funciona
 
@@ -19,7 +62,7 @@ Sandbox urbano 2D cenital para navegador, ambientado en una versión comprimida 
 - Combate con noqueo y muerte diferenciados; puños, piedra, manopla, botella, pistola y metralleta. Las armas de fuego solo aparecen en rifas o enemigos/policías.
 - NPC con casa, trabajo, ocio, horario, memoria, separación de multitudes, reacción al tráfico, frases, huida, defensa y dinero recuperable al noquearlos.
 - Tráfico físico de 24 vehículos con semáforos sincronizados, frenado entre autos, colisiones y consecuencias para daño, manejo y calificación de Didi.
-- Policía de cinco estrellas, soborno a una estrella, patrullaje nocturno reforzado, búsqueda con evasión de edificios, retenes colocados sobre vialidades, separos durante 10 segundos, confiscación de armas y pérdida de la mitad del efectivo.
+- Policía de cinco estrellas que dispara desde la primera, con oficiales a pie que bajan de la patrulla, puntería y cadencia que escalan por estrella, soborno a una estrella, patrullaje nocturno reforzado, retenes que estrellan sin arrestar, y separos durante 10 segundos solo al morir, con confiscación de armas y pérdida de la mitad del efectivo.
 - Economía separada entre efectivo y banco, cajeros, rifas con valor esperado negativo, empeño y premios vendibles.
 - Arrancones con inscripción, apuestas de podio, ruta por aros y persecuciones que no cancelan la carrera.
 - Didi Comida mediante la cuenta de Rochi, calificación con tacos, propinas pequeñas, comisión y penalizaciones por retrasos/choques.
@@ -49,7 +92,8 @@ Abre `http://localhost:8080`.
 | Mover / conducir | WASD o flechas | Palanca rosa |
 | Usar / entrar / salir | E | USAR |
 | Correr / acelerar | Shift | CORRER / ACELERAR |
-| Atacar | Espacio | ATACAR |
+| Atacar (a pie) | Espacio | PEGAR |
+| Freno de mano (manejando) | Espacio | FRENO |
 | Cambiar arma | Q | Mochila del celular |
 | Cambiar estación | R | Aplicación Radio |
 | Celular | P o Escape | Botón amarillo |
@@ -83,4 +127,4 @@ El `docker-compose.yml` publica el juego en el puerto `8080`.
 npm test
 ```
 
-`GAME_BIBLE.md` es la fuente de verdad del canon. `POLISH_AUDIT.md` conserva la investigación, los problemas detectados y el orden recomendado de desarrollo para que el proyecto no vuelva a depender de un chat.
+`GAME_BIBLE.md` es la fuente de verdad del canon. `BUGS_Y_ARREGLOS.md` lleva la bitácora de bugs. `POLISH_AUDIT.md` conserva la investigación, los problemas detectados y el orden recomendado de desarrollo para que el proyecto no vuelva a depender de un chat.

@@ -11,6 +11,7 @@ const required = [
   "docker-compose.yml",
   "GAME_BIBLE.md",
   "POLISH_AUDIT.md",
+  "BUGS_Y_ARREGLOS.md",
 ];
 
 for (const file of required) {

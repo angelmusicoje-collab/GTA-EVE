@@ -138,8 +138,9 @@ for (let index = 0; index < 4; index += 1) use.listeners.get("pointerdown")({ pr
 if (!elementFor("#objective-text").textContent.includes("PELÍCANO")) throw new Error("El diálogo de Stif no abrió el recorrido del tutorial");
 if (elementFor("#money").textContent !== "$825") throw new Error("Stif no entregó los $800 de prueba");
 
-sandbox.window.__EVE_GTA_DEBUG__.state.player.x = 2828;
-sandbox.window.__EVE_GTA_DEBUG__.state.player.y = 1418;
+const poi = sandbox.window.__EVE_GTA_DEBUG__.POI;
+sandbox.window.__EVE_GTA_DEBUG__.state.player.x = poi.pelicano.x;
+sandbox.window.__EVE_GTA_DEBUG__.state.player.y = poi.pelicano.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 if (!elementFor("#objective-text").textContent.includes("CAGUAMA")) throw new Error("Entrar a El Pelícano no activó la compra del tutorial");
 
@@ -167,8 +168,8 @@ closePanel();
 debug.state.player.x = 450;
 debug.state.player.y = 595;
 use.listeners.get("pointerdown")({ preventDefault() {} });
-debug.state.player.x = 4465;
-debug.state.player.y = 2092;
+debug.state.player.x = poi.bank.x;
+debug.state.player.y = poi.bank.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 debug.state.player.x = 450;
 debug.state.player.y = 205;
@@ -180,22 +181,37 @@ closePanel();
 debug.state.player.x = 450;
 debug.state.player.y = 595;
 use.listeners.get("pointerdown")({ preventDefault() {} });
-debug.state.player.x = 3388;
-debug.state.player.y = 1995;
+debug.state.player.x = poi.raffle.x;
+debug.state.player.y = poi.raffle.y;
+use.listeners.get("pointerdown")({ preventDefault() {} });
+if (debug.state.scene !== "raffle") throw new Error("Usar en Rifas El Aferrado no metió a Eve al local");
+debug.state.player.x = 450;
+debug.state.player.y = 205;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 elementFor("#panel-actions").children[0].click();
 if (!elementFor("#objective-text").textContent.includes("EMPEÑO")) throw new Error("La rifa de prueba no entregó premio vendible");
 
 closePanel();
-debug.state.player.x = 3905;
-debug.state.player.y = 2235;
+debug.state.player.x = 450;
+debug.state.player.y = 595;
+use.listeners.get("pointerdown")({ preventDefault() {} });
+if (debug.state.scene !== "city") throw new Error("La salida de Rifas no devolvió a Eve a la calle");
+debug.state.player.x = poi.pawn.x;
+debug.state.player.y = poi.pawn.y;
+use.listeners.get("pointerdown")({ preventDefault() {} });
+if (debug.state.scene !== "pawn") throw new Error("Usar en el Empeño no metió a Eve al local");
+debug.state.player.x = 450;
+debug.state.player.y = 205;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 elementFor("#panel-actions").children[0].click();
 if (!elementFor("#objective-text").textContent.includes("TUNEAR")) throw new Error("Empeñar el premio no activó el taller");
 
 closePanel();
-debug.state.player.x = 4810;
-debug.state.player.y = 2685;
+debug.state.player.x = 450;
+debug.state.player.y = 595;
+use.listeners.get("pointerdown")({ preventDefault() {} });
+debug.state.player.x = poi.garage.x;
+debug.state.player.y = poi.garage.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 debug.state.player.x = 450;
 debug.state.player.y = 205;
@@ -209,13 +225,21 @@ debug.state.player.y = 595;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 debug.state.inVehicle = true;
 debug.state.vehicleKind = "truck";
-debug.state.truck.x = 5365;
-debug.state.truck.y = 3455;
-debug.state.player.x = 5365;
-debug.state.player.y = 3455;
+debug.state.truck.x = poi.race.x;
+debug.state.truck.y = poi.race.y;
+debug.state.player.x = poi.race.x;
+debug.state.player.y = poi.race.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 elementFor("#panel-actions").children[0].click();
 let simulatedNow = performance.now() + 100;
+// La carrera arranca con cuenta regresiva: hay que dejarla correr antes de
+// empezar a cruzar aros, si no el jugador "gana" antes del banderazo.
+for (let tick = 0; tick < 90; tick += 1) {
+  simulatedNow += 50;
+  nextFrame(simulatedNow);
+}
+if (debug.state.race.countdown > 0) throw new Error("La cuenta regresiva de la carrera no terminó");
+if (!debug.racers.length) throw new Error("La carrera arrancó sin rivales");
 for (const point of debug.raceRoute.slice(1)) {
   debug.state.truck.x = point.x;
   debug.state.truck.y = point.y;
@@ -224,10 +248,10 @@ for (const point of debug.raceRoute.slice(1)) {
 }
 if (!elementFor("#objective-text").textContent.includes("JARDÍN DEL PISTO")) throw new Error("Terminar la carrera no activó el regreso al Jardín");
 
-debug.state.truck.x = 3360;
-debug.state.truck.y = 865;
-debug.state.player.x = 3360;
-debug.state.player.y = 865;
+debug.state.truck.x = poi.garden.x;
+debug.state.truck.y = poi.garden.y;
+debug.state.player.x = poi.garden.x;
+debug.state.player.y = poi.garden.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 4; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 if (!elementFor("#objective-text").textContent.includes("CHOLOS")) throw new Error("El regreso al Jardín no inició la pelea");
@@ -242,8 +266,8 @@ if (!elementFor("#objective-text").textContent.includes("HUIR")) throw new Error
 
 debug.state.inVehicle = true;
 debug.state.vehicleKind = "truck";
-debug.state.truck.x = 2240;
-debug.state.truck.y = 3150;
+debug.state.truck.x = poi.escape.x;
+debug.state.truck.y = poi.escape.y;
 simulatedNow += 50;
 nextFrame(simulatedNow);
 for (let index = 0; index < 3; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
@@ -264,8 +288,8 @@ use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 4; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 if (!elementFor("#objective-text").textContent.includes("LOTE")) throw new Error("Fede no reveló la ubicación del Sentra");
 
-debug.state.player.x = 1210;
-debug.state.player.y = 3260;
+debug.state.player.x = poi.fedeLot.x;
+debug.state.player.y = poi.fedeLot.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 3; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 if (debug.storyEnemies.length !== 5 || !elementFor("#objective-text").textContent.includes("CHOLOS")) throw new Error("El lote no inició la pelea por el Sentra");
@@ -287,8 +311,8 @@ nextFrame(simulatedNow);
 if (debug.state.wanted !== 2) throw new Error("La búsqueda del Sentra bajó de las dos estrellas obligatorias antes de entregarlo");
 const moneyBeforeFede = debug.state.money;
 const rochiBeforeFede = debug.state.rochi.cash;
-debug.state.story.fedeCar.x = 5005;
-debug.state.story.fedeCar.y = 1050;
+debug.state.story.fedeCar.x = poi.fedeDelivery.x;
+debug.state.story.fedeCar.y = poi.fedeDelivery.y;
 simulatedNow += 50;
 nextFrame(simulatedNow);
 if (debug.state.money !== moneyBeforeFede + 4000) throw new Error("Fede no mostró el pago bruto de $4,000 durante la cinemática");
@@ -300,8 +324,8 @@ const rochiAfterFede = debug.state.rochi.cash;
 if (debug.settleFedeReward() !== false || debug.state.money !== moneyAfterFede || debug.state.rochi.cash !== rochiAfterFede) throw new Error("La recompensa de Fede puede cobrarse dos veces");
 if (!elementFor("#objective-text").textContent.includes("CBTIS 19")) throw new Error("Devolver el Sentra no abrió la misión Faltistas");
 
-debug.state.player.x = 5380;
-debug.state.player.y = 1565;
+debug.state.player.x = poi.cbtis.x;
+debug.state.player.y = poi.cbtis.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 debug.state.player.x = 450;
 debug.state.player.y = 205;
@@ -317,8 +341,8 @@ nextFrame(simulatedNow);
 for (let index = 0; index < 4; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 if (!debug.state.story.completed.cbtis || !debug.state.story.corralonUnlocked) throw new Error("Faltistas no desbloqueó la moto de Rochi");
 
-debug.state.player.x = 5910;
-debug.state.player.y = 3715;
+debug.state.player.x = poi.agronomia.x;
+debug.state.player.y = poi.agronomia.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 3; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 for (const valve of debug.state.story.valves) {
@@ -326,22 +350,22 @@ for (const valve of debug.state.story.valves) {
   debug.state.player.y = valve.y;
   use.listeners.get("pointerdown")({ preventDefault() {} });
 }
-debug.state.player.x = 5910;
-debug.state.player.y = 3715;
+debug.state.player.x = poi.agronomia.x;
+debug.state.player.y = poi.agronomia.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 3; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 if (!debug.state.story.completed.agronomia || debug.state.story.mission !== "rochiTruth") throw new Error("La misión de agronomía no completó sus cuatro muestras");
 
-debug.state.player.x = 4580;
-debug.state.player.y = 985;
+debug.state.player.x = poi.marina.x;
+debug.state.player.y = poi.marina.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 debug.state.player.x = 450;
 debug.state.player.y = 205;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 2; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 debug.state.story.step = 2;
-debug.state.player.x = 4465;
-debug.state.player.y = 2092;
+debug.state.player.x = poi.bank.x;
+debug.state.player.y = poi.bank.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 debug.state.player.x = 450;
 debug.state.player.y = 205;
@@ -354,8 +378,8 @@ use.listeners.get("pointerdown")({ preventDefault() {} });
 
 debug.startCorralonMission();
 for (let index = 0; index < 3; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
-debug.state.player.x = 5985;
-debug.state.player.y = 835;
+debug.state.player.x = poi.corralon.x;
+debug.state.player.y = poi.corralon.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 3; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 if (!debug.state.story.bike || !elementFor("#objective-text").textContent.includes("MOTO")) throw new Error("Entrar al corralón no reveló la moto de Rochi");
@@ -408,5 +432,87 @@ debug.state.truck.y = trafficCar.y;
 trafficCar.collisionCooldown = 0;
 debug.updateTraffic(0);
 if (debug.state.truck.health >= 100) throw new Error("El tráfico sigue siendo decorativo y no causa colisiones");
+
+// Regresión: ningún edificio con nombre puede quedar plantado encima de una
+// calle. Antes había 22 así y el tráfico atravesaba la Casa de Eve.
+const sobrepuestos = debug.buildings.filter((b) => debug.rectTouchesRoad(b, 4)).map((b) => b.id);
+if (sobrepuestos.length) throw new Error(`Edificios encima de la calle: ${sobrepuestos.join(", ")}`);
+
+// Regresión: tocar una patrulla NO puede mandarte a los separos. Solo morir.
+debug.state.jail.active = false;
+debug.state.health = 100;
+debug.state.armor = 0;
+debug.state.wanted = 3;
+debug.state.scene = "city";
+debug.state.inVehicle = false;
+debug.policeOfficers.length = 0;
+debug.policeUnits.length = 0;
+debug.policeUnits.push({ x: debug.state.player.x, y: debug.state.player.y, angle: 0, heading: 0, shotTimer: 99, health: 100, status: "active", police: true, cash: 0, dropped: false, deployed: true, deployTimer: 99, speech: "", speechTimer: 0 });
+debug.updateWanted(1 / 60);
+if (debug.state.jail.active) throw new Error("La patrulla sigue arrestando de un roce");
+if (debug.state.health >= 100) throw new Error("El choque con la patrulla debería quitar vida");
+
+// Regresión: al llegar a cero de vida sí caes en los separos.
+debug.state.health = 0;
+debug.state.lastDeathCause = "prueba";
+debug.recoverEve();
+if (!debug.state.jail.active) throw new Error("Morir debería mandar a Eve a los separos");
+debug.state.jail.active = false;
+debug.state.health = 100;
+debug.state.wanted = 0;
+
+// Regresión de trazado: la red vial tiene que servir para manejar.
+const ring = debug.roads.find((road) => road.ring);
+if (!ring) throw new Error("No hay anillo periférico: se pierde el circuito de carreras");
+const ringStart = ring.points[0];
+const ringEnd = ring.points[ring.points.length - 1];
+if (Math.hypot(ringStart[0] - ringEnd[0], ringStart[1] - ringEnd[1]) > 1) throw new Error("El anillo no cierra: no se puede dar la vuelta completa");
+if (debug.residentialRoads.length < 8) throw new Error(`Quedaron muy pocas calles secundarias (${debug.residentialRoads.length})`);
+if (debug.roadIntersections.length < 20) throw new Error("Faltan cruces: la cuadrícula no está conectada");
+if (debug.urbanBuildings.length < 120) throw new Error(`La ciudad quedó despoblada (${debug.urbanBuildings.length} construcciones)`);
+
+// La carrera debe correr sobre el anillo, no por terreno suelto.
+for (const point of debug.raceRoute) {
+  if (!debug.pointOnRoad(point.x, point.y, 30)) throw new Error("Una meta de la carrera quedó fuera de la calle");
+}
+
+// Regresión de manejo: el freno de mano tiene que producir derrape de verdad.
+// La primera versión del modelo rotaba el vector de velocidad junto con el
+// volante, así que el deslizamiento lateral siempre daba cero.
+debug.state.scene = "city";
+debug.state.jail.active = false;
+debug.state.wanted = 0;
+debug.state.inVehicle = true;
+debug.state.vehicleKind = "truck";
+debug.state.truck.destroyed = false;
+debug.state.truck.fuel = 100;
+debug.state.truck.health = 100;
+const ringRoad = debug.roads.find((road) => road.ring);
+const straight = ringRoad.points[0];
+debug.state.truck.x = straight[0] + 600;
+debug.state.truck.y = straight[1];
+debug.state.truck.angle = Math.PI / 2;
+debug.state.truck.vx = 300;
+debug.state.truck.vy = 0;
+debug.state.truck.speed = 300;
+debug.skidMarks.length = 0;
+
+// Volantazo con freno de mano puesto.
+debug.input.handbrake = true;
+debug.input.joystick.x = 1;
+debug.input.joystick.y = 0;
+// Se mide el pico del deslizamiento durante la maniobra: el valor final varía
+// según en qué cuadro se lea, porque el agarre lo va comiendo.
+let peakSlip = 0;
+for (let tick = 0; tick < 40; tick += 1) {
+  simulatedNow += 16;
+  nextFrame(simulatedNow);
+  peakSlip = Math.max(peakSlip, debug.state.truck.slip || 0);
+}
+debug.input.handbrake = false;
+debug.input.joystick.x = 0;
+if (!(peakSlip > 40)) throw new Error(`El freno de mano no produce derrape (pico de deslizamiento ${Math.round(peakSlip)})`);
+if (!debug.skidMarks.length) throw new Error("Derrapar no dejó marcas de llanta");
+debug.state.inVehicle = false;
 
 console.log(`Prueba de ejecución terminada: historia completa, ${debug.urbanBuildings.length} edificios urbanos, ${debug.traffic.length} vehículos, rutinas civiles y colisiones correctas.`);
