@@ -806,6 +806,7 @@
     },
     pelicano: {
       label: "EL PELÍCANO", floor: "#b5aa8c", exit: POI.pelicano, service: { type: "pelicano-shop", x: 450, y: 205 },
+      clerk: { name: "DOÑA MARU", shirt: "#a8555f", hair: "#3d2a1c", skin: "#c98d63", longHair: true, line: "Fría o al tiempo, mija." },
       furniture: [
         { x: 80, y: 80, w: 115, h: 350, color: "#604a34", label: "CAGUAMAS" },
         { x: 705, y: 80, w: 115, h: 350, color: "#604a34", label: "BOTANA" },
@@ -814,6 +815,7 @@
     },
     marina: {
       label: "LA MARINA · SAN FERNANDO", floor: "#d6d2c6", exit: POI.marina, service: { type: "marina-counter", x: 450, y: 205 },
+      clerk: { name: "CAJERA", shirt: "#3e75bb", hair: "#241a14", skin: "#d59a70", longHair: true, line: "¿Con tarjeta o efectivo?" },
       furniture: [
         { x: 65, y: 80, w: 155, h: 390, color: "#607b9c", label: "ROPA" },
         { x: 680, y: 80, w: 155, h: 390, color: "#607b9c", label: "HOGAR" },
@@ -822,6 +824,7 @@
     },
     cbtis: {
       label: "CBTIS 19 · CONTROL ESCOLAR", floor: "#bbbda9", exit: POI.cbtis, service: { type: "cbtis-teacher", x: 450, y: 200 },
+      clerk: { name: "PREFECTO", shirt: "#4a6b52", hair: "#1a1512", skin: "#a06a45", line: "Sin certificado no hay trámite." },
       furniture: [
         { x: 70, y: 80, w: 150, h: 360, color: "#68755e", label: "ARCHIVO" },
         { x: 680, y: 80, w: 150, h: 360, color: "#68755e", label: "ARCHIVO" },
@@ -830,6 +833,7 @@
     },
     bank: {
       label: "BANCO COLIMA", floor: "#a9b6b8", exit: POI.bank, service: { type: "bank-counter", x: 450, y: 200 },
+      clerk: { name: "EJECUTIVO", shirt: "#5b6470", hair: "#120f0e", skin: "#b87c53", line: "Pase a la ventanilla cuatro." },
       furniture: [
         { x: 70, y: 85, w: 145, h: 345, color: "#566970", label: "CAJEROS" },
         { x: 685, y: 85, w: 145, h: 345, color: "#566970", label: "VENTANILLAS" },
@@ -1238,7 +1242,8 @@
     state.health = clamp(state.health - remaining, 0, 100);
     if (state.health < before) {
       state.regenDelay = 9;
-      state.hurtFlash = Math.min(1, (state.hurtFlash || 0) + 0.25 + remaining / 60);
+      state.shake = Math.min(1.6, (state.shake || 0) + remaining / 26);
+      state.hurtFlash = Math.min(0.55, (state.hurtFlash || 0) + 0.12 + remaining / 130);
       const focus = getFocus();
       impactParticles(focus.x, focus.y, "#c8324a");
       if (state.health <= 0 && !state.jail.active) {
@@ -1257,6 +1262,8 @@
   }
 
   function destroyVehicle(vehicle = activeVehicle()) {
+    if (vehicle.destroyed) return;
+    shakeCamera(1.2);
     vehicle.destroyed = true;
     vehicle.health = 0;
     vehicle.speed = 0;
@@ -1697,7 +1704,22 @@
       const dy = focus.y - unit.y;
       const dist = Math.hypot(dx, dy) || 1;
       closest = Math.min(closest, dist);
-      const desiredHeading = Math.atan2(dy, dx);
+      // Separación entre unidades: sin esto las patrullas se apilan en el
+      // mismo pixel encima de Eve y parecen una sola.
+      let steerX = dx;
+      let steerY = dy;
+      for (const other of policeUnits) {
+        if (other === unit || other.status === "dead") continue;
+        const ox = unit.x - other.x;
+        const oy = unit.y - other.y;
+        const gap = Math.hypot(ox, oy);
+        if (gap > 0 && gap < 82) {
+          const push = (82 - gap) / 82;
+          steerX += (ox / gap) * push * 200;
+          steerY += (oy / gap) * push * 200;
+        }
+      }
+      const desiredHeading = Math.atan2(steerY, steerX);
       const openHeading = chooseOpenHeading(unit, desiredHeading, 24, 62 + state.wanted * 7);
       unit.heading = smoothAngle(unit.heading ?? unit.angle - Math.PI / 2, openHeading, clamp(dt * 3.4, 0, 1));
       unit.angle = unit.heading + Math.PI / 2;
@@ -1862,6 +1884,7 @@
       vehicle.health = clamp(vehicle.health - (fast ? 22 : 34), 0, 100);
       damageEve(fast ? 12 : 20, "un retén");
       impactParticles(block.x, block.y, "#e7ff1f");
+      shakeCamera(0.9);
       showHint(fast ? "Te llevaste el retén de corbata." : "Te frenó el retén. Písale o bájate y córrele.", 1900);
       if (vehicle.health <= 0) destroyVehicle(vehicle);
     }
@@ -2021,6 +2044,10 @@
     }
   }
 
+  function shakeCamera(amount) {
+    state.shake = Math.min(1.8, (state.shake || 0) + amount);
+  }
+
   function impactParticles(x, y, color) {
     for (let i = 0; i < 8; i += 1) {
       const angle = (i / 8) * TAU + Math.random() * 0.3;
@@ -2108,12 +2135,14 @@
     if (state.scene !== "city") {
       const service = interiors[state.scene]?.service;
       if (service && distance(player, service) < 105) return service.type;
-      if (player.y > 550 && Math.abs(player.x - 450) < 100) return "interior-exit";
+      if (player.y > 512 && Math.abs(player.x - 450) < 100) return "interior-exit";
       return null;
     }
 
     const focus = getFocus();
-    if (state.wanted === 1 && state.money >= 75 && policeUnits.some((unit) => distance(focus, unit) < 105)) return "bribe";
+    if (state.wanted === 1 && state.money >= 75
+      && (policeUnits.some((unit) => distance(focus, unit) < 105)
+        || policeOfficers.some((cop) => cop.status === "active" && distance(focus, cop) < 95))) return "bribe";
     if (state.didi.active) {
       const stop = state.didi.phase === "pickup" ? state.didi.pickup : state.didi.dropoff;
       if (stop && distance(focus, stop) < 105) return "didi-stop";
@@ -3475,6 +3504,10 @@
     state.wanted = 0;
     state.wantedTimer = 0;
     policeUnits.length = 0;
+    // Antes solo se iban las patrullas y los policías a pie te seguían
+    // balaceando después de haber pagado.
+    policeOfficers.length = 0;
+    roadblocks.length = 0;
     showHint("Soborno aceptado. Esta unidad decidió no haber visto nada.", 1900);
     addNews("Una patrulla olvidó repentinamente por qué seguía a Eve.");
     saveGame();
@@ -3483,6 +3516,14 @@
   function attack() {
     const weapon = weapons[state.equippedWeapon] || weapons.fists;
     if (state.player.punch > 0) return;
+    const firearmEquipped = state.equippedWeapon === "pistol" || state.equippedWeapon === "smg";
+    // A puñetazos desde la troca no se llega a nadie; con arma sí, pero
+    // disparando desde el carro y no desde donde Eve se bajó la última vez.
+    if (state.inVehicle && !firearmEquipped) {
+      showHint("Bájate para repartir. Desde aquí no alcanzas.", 1000);
+      sound("deny");
+      return;
+    }
     if ((state.equippedWeapon === "pistol" || state.equippedWeapon === "smg") && (state.ammo[state.equippedWeapon] || 0) <= 0) {
       showHint("Sin balas. Cambia de arma con Q.", 1100);
       sound("deny");
@@ -3500,26 +3541,29 @@
     if (state.rochi.available && !state.rochi.asleep) namedTargets.push(state.rochi);
     if (state.fede.available) namedTargets.push(state.fede);
     const targets = [...tutorialCholos, ...storyEnemies, ...npcs, ...policeUnits, ...policeOfficers, ...namedTargets].filter((npc) => npc.status === "active" && !(npc.gardenRegular && isNight()));
+    // Origen y dirección del ataque: a pie sale de Eve, manejando sale del
+    // vehículo y apunta hacia donde va el cofre.
+    const shooter = state.inVehicle ? activeVehicle() : state.player;
+    const aim = state.inVehicle ? (activeVehicle().angle || 0) - Math.PI / 2 : state.player.angle;
     let victim = null;
     let best = weapon.range + 1;
     for (const npc of targets) {
-      const dx = npc.x - state.player.x;
-      const dy = npc.y - state.player.y;
+      const dx = npc.x - shooter.x;
+      const dy = npc.y - shooter.y;
       const dist = Math.hypot(dx, dy);
       if (dist > weapon.range) continue;
-      const alignment = (dx * Math.cos(state.player.angle) + dy * Math.sin(state.player.angle)) / (dist || 1);
+      const alignment = (dx * Math.cos(aim) + dy * Math.sin(aim)) / (dist || 1);
       if (alignment < (firearm ? 0.88 : 0.3)) continue;
-      if (firearm && lineOfSightBlocked(state.player.x, state.player.y, npc.x, npc.y, 4)) continue;
+      if (firearm && lineOfSightBlocked(shooter.x, shooter.y, npc.x, npc.y, 4)) continue;
       if (dist < best) {
         victim = npc;
         best = dist;
       }
     }
     if (firearm) {
-      const endpoint = victim ? victim : traceShotEndpoint(state.player.x, state.player.y, state.player.angle, weapon.range);
-      const endX = endpoint.x;
-      const endY = endpoint.y;
-      projectiles.push({ x1: state.player.x, y1: state.player.y, x2: endX, y2: endY, life: 0.09 });
+      const endpoint = victim ? victim : traceShotEndpoint(shooter.x, shooter.y, aim, weapon.range);
+      projectiles.push({ x1: shooter.x, y1: shooter.y, x2: endpoint.x, y2: endpoint.y, life: 0.09 });
+      state.shake = Math.max(state.shake, 0.35);
     }
     if (!victim) return;
     hitNpc(victim, weapon);
@@ -3530,8 +3574,9 @@
     npc.health -= weapon.damage;
     npc.memory = 99;
     npc.stunned = weapon.lethal ? 0.3 : 1.1;
-    npc.x += Math.cos(state.player.angle) * (weapon.lethal ? 15 : 28);
-    npc.y += Math.sin(state.player.angle) * (weapon.lethal ? 15 : 28);
+    const shove = state.inVehicle ? (activeVehicle().angle || 0) - Math.PI / 2 : state.player.angle;
+    npc.x += Math.cos(shove) * (weapon.lethal ? 15 : 28);
+    npc.y += Math.sin(shove) * (weapon.lethal ? 15 : 28);
     impactParticles(npc.x, npc.y, weapon.lethal ? "#e34e62" : "#ffd0a8");
 
     if (npc.health > 0) {
@@ -5360,12 +5405,14 @@
 
     // Salida marcada en el piso, con flechas.
     ctx.fillStyle = "#1b1e24";
-    ctx.fillRect(px(390), px(H - 74), 120, 24);
+    ctx.fillRect(px(386), px(H - 128), 128, 78);
+    ctx.fillStyle = shade(room.floor, -34);
+    ctx.fillRect(px(390), px(H - 124), 120, 70);
     ctx.fillStyle = palette.pink;
-    ctx.fillRect(px(395), px(H - 70), 110, 16);
+    ctx.fillRect(px(395), px(H - 120), 110, 14);
     ctx.fillStyle = "#0b0d12";
-    for (let i = 0; i < 3; i += 1) ctx.fillRect(px(420 + i * 30), px(H - 66), 8, 8);
-    queueWorldLabel(450, H - 84, "SALIDA", { scale: 1, color: palette.pink, range: 0 });
+    for (let i = 0; i < 3; i += 1) ctx.fillRect(px(420 + i * 30), px(H - 117), 8, 8);
+    queueWorldLabel(450, H - 100, "SALIDA", { scale: 1, color: palette.pink, range: 0 });
 
     if (room.service) {
       const clerk = room.clerk || {};
@@ -5415,20 +5462,12 @@
           ctx.fillRect(x + offset - 7, 336, 14, 48);
         }
       }
-      ctx.fillStyle = "#244c7a";
-      ctx.fillRect(335, 455, 230, 40);
-      ctx.fillStyle = "#fff";
-      ctx.font = "900 15px Arial";
-      ctx.fillText("OFERTA QUE NO APLICA EN NADA", 450, 481);
+      bevelRect(335, 455, 230, 40, "#244c7a", "#3a6ea6", "#152c48", 3);
+      queueWorldLabel(450, 468, "OFERTA QUE NO APLICA EN NADA", { scale: 1, color: "#eef4ff", range: 0 });
     } else if (state.scene === "cbtis") {
-      ctx.fillStyle = "#294f3b";
-      ctx.fillRect(300, 185, 300, 72);
-      ctx.strokeStyle = "#e8e4cf";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(306, 191, 288, 60);
-      ctx.fillStyle = "#e8e4cf";
-      ctx.font = "700 14px Arial";
-      ctx.fillText("TESIS ≠ EXCUSA PARA FALTAR", 450, 225);
+      bevelRect(300, 185, 300, 72, "#294f3b", "#3d7355", "#17301f", 3);
+      outlineRect(306, 191, 288, 60, "#e8e4cf", 2);
+      queueWorldLabel(450, 214, "TESIS NO ES EXCUSA", { scale: 1, color: "#e8e4cf", range: 0 });
       for (const y of [340, 430]) for (const x of [320, 450, 580]) {
         ctx.fillStyle = "#735944";
         ctx.fillRect(x - 42, y - 18, 84, 36);
@@ -5481,11 +5520,8 @@
         ctx.stroke();
       }
     } else if (state.scene === "pelicano") {
-      ctx.fillStyle = "#ad2c35";
-      ctx.fillRect(315, 320, 270, 58);
-      ctx.fillStyle = "#fff2cf";
-      ctx.font = "900 15px Arial";
-      ctx.fillText("NO HAY FIADO · NI A ROCHI", 450, 355);
+      bevelRect(315, 320, 270, 58, "#ad2c35", "#d9525c", "#6b171f", 3);
+      queueWorldLabel(450, 342, "NO HAY FIADO NI A ROCHI", { scale: 1, color: "#fff2cf", range: 0 });
     } else if (state.scene === "house") {
       ctx.fillStyle = "#87446b";
       ctx.fillRect(320, 455, 260, 92);
@@ -5537,10 +5573,12 @@
     // Las etiquetas van al final y en espacio de pantalla: siempre legibles.
     flushWorldLabels();
     if (state.hurtFlash > 0) {
-      ctx.fillStyle = `rgba(190,32,52,${clamp(state.hurtFlash * 0.4, 0, 0.45)})`;
+      // Marco rojo en la orilla en vez de teñir todo: se entiende que te
+      // están pegando y se sigue viendo el juego.
+      ctx.fillStyle = `rgba(190,32,52,${clamp(state.hurtFlash * 0.16, 0, 0.14)})`;
       ctx.fillRect(0, 0, view.bufferWidth, view.bufferHeight);
-      ctx.fillStyle = `rgba(230,70,90,${clamp(state.hurtFlash * 0.6, 0, 0.7)})`;
-      const edge = 3;
+      ctx.fillStyle = `rgba(230,70,90,${clamp(state.hurtFlash * 1.1, 0, 0.75)})`;
+      const edge = 4;
       ctx.fillRect(0, 0, view.bufferWidth, edge);
       ctx.fillRect(0, view.bufferHeight - edge, view.bufferWidth, edge);
       ctx.fillRect(0, 0, edge, view.bufferHeight);
@@ -5788,6 +5826,26 @@
     }
   }
 
+  // La ciudad se reacomodó (edificios que estaban sobre avenidas), así que una
+  // partida vieja puede dejar a Eve o a la troca dentro de una pared. Se busca
+  // el hueco libre más cercano en espiral en vez de dejarla atorada.
+  function unstick(entity, radius) {
+    if (!cityBlocked(entity.x, entity.y, radius, true)) return false;
+    for (let ring = 24; ring <= 900; ring += 24) {
+      for (let i = 0; i < 24; i += 1) {
+        const angle = (i / 24) * TAU;
+        const x = clamp(entity.x + Math.cos(angle) * ring, 40, WORLD.width - 40);
+        const y = clamp(entity.y + Math.sin(angle) * ring, 40, WORLD.height - 40);
+        if (!cityBlocked(x, y, radius, true)) {
+          entity.x = x;
+          entity.y = y;
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   function loadGame() {
     try {
       let raw = localStorage.getItem(SAVE_KEY);
@@ -5871,6 +5929,16 @@
         }
       }
       if (state.jail.active) $("#separos").classList.remove("hidden");
+      // Rescatar de la geometría a quien haya quedado atrapado por el
+      // reacomodo de la ciudad.
+      if (state.scene === "city") {
+        if (unstick(state.player, state.player.radius || 15)) {
+          showHint("Te sacamos de una pared. La ciudad se reacomodó tantito.", 2400);
+        }
+        unstick(state.truck, state.truck.radius || 31);
+        if (state.stolenCar) unstick(state.stolenCar, 28);
+        for (const person of [state.stif, state.rochi, state.fede]) unstick(person, 13);
+      }
       if (state.story.mission === "fede" && state.story.fedeRewardPhase === "gross") showFedeRewardDialogue();
       $("#start-btn").textContent = "CONTINUAR";
       return true;
