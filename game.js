@@ -838,10 +838,38 @@
     },
     garage: {
       label: "TALLER EL VOLCÁN", floor: "#777b79", exit: POI.garage, service: { type: "garage-counter", x: 450, y: 205 },
+      clerk: { name: "DON CHELO", shirt: "#6d5a3f", hair: "#3a3128", skin: "#a06a45", line: "Déjala y no preguntes." },
       furniture: [
         { x: 65, y: 80, w: 150, h: 365, color: "#494d50", label: "HERRAMIENTA" },
         { x: 685, y: 80, w: 150, h: 365, color: "#494d50", label: "REFACCIONES" },
         { x: 300, y: 75, w: 300, h: 95, color: "#682d4b", label: "MOSTRADOR" },
+      ],
+    },
+    raffle: {
+      label: "RIFAS EL AFERRADO", floor: "#8f7f9c", exit: POI.raffle, service: { type: "raffle-counter", x: 450, y: 205 },
+      clerk: { name: "LA GÜERA", shirt: "#b0475f", hair: "#5a3a22", skin: "#d59a70", longHair: true, line: "Hoy sí cae, mija." },
+      furniture: [
+        { x: 70, y: 80, w: 150, h: 360, color: "#5d4670", label: "PREMIOS" },
+        { x: 680, y: 80, w: 150, h: 360, color: "#5d4670", label: "BOLETOS" },
+        { x: 300, y: 75, w: 300, h: 95, color: "#3d2f4c", label: "MOSTRADOR" },
+      ],
+    },
+    pawn: {
+      label: "EMPEÑO VOLCÁN", floor: "#a2916d", exit: POI.pawn, service: { type: "pawn-counter", x: 450, y: 205 },
+      clerk: { name: "EL LIC", shirt: "#8a7652", hair: "#1f1a15", skin: "#b87c53", cap: true, line: "Te doy la mitad y ya." },
+      furniture: [
+        { x: 68, y: 80, w: 152, h: 360, color: "#6d5a35", label: "VITRINA" },
+        { x: 680, y: 80, w: 152, h: 360, color: "#6d5a35", label: "BODEGA" },
+        { x: 300, y: 75, w: 300, h: 95, color: "#4a3d24", label: "MOSTRADOR" },
+      ],
+    },
+    gas: {
+      label: "TIENDA DE LA GASOLINERA", floor: "#b8b5a4", exit: POI.gas, service: { type: "gas-counter", x: 450, y: 205 },
+      clerk: { name: "MIRE", shirt: "#3f8a52", hair: "#241a14", skin: "#c98d63", longHair: true, line: "¿Le cargo o qué?" },
+      furniture: [
+        { x: 66, y: 80, w: 150, h: 360, color: "#4a6b52", label: "REFRIS" },
+        { x: 682, y: 80, w: 150, h: 360, color: "#7a6b45", label: "SABRITAS" },
+        { x: 300, y: 75, w: 300, h: 95, color: "#35473a", label: "CAJA" },
       ],
     },
   };
@@ -945,7 +973,7 @@
     ctx.imageSmoothingEnabled = false;
     // Zoom en pixeles de buffer por unidad de mundo: fija cuánto mundo se ve
     // en vertical, así que Eve se ve igual de grande en cualquier pantalla.
-    camera.zoom = clamp(view.bufferHeight / WORLD_VIEW_HEIGHT, 0.34, 0.92);
+    camera.zoom = desiredZoom();
   }
 
   function getMapBounds() {
@@ -963,7 +991,17 @@
     return state.inVehicle ? activeVehicle() : state.player;
   }
 
+  // El zoom de calle no sirve dentro de un local: el cuarto mide 900x650 y
+  // se veía solo un pedazo. Adentro se encuadra el cuarto completo.
+  function desiredZoom() {
+    if (state.scene !== "city") {
+      return clamp(Math.min(view.bufferWidth / (INTERIOR.width + 40), view.bufferHeight / (INTERIOR.height + 40)), 0.22, 1.1);
+    }
+    return clamp(view.bufferHeight / WORLD_VIEW_HEIGHT, 0.34, 0.92);
+  }
+
   function updateCamera(dt) {
+    camera.zoom = lerp(camera.zoom, desiredZoom(), clamp(dt * 7, 0, 1));
     const focus = getFocus();
     const bounds = getMapBounds();
     // Mira un poco hacia donde vas, para no ir siempre pegado al borde.
@@ -2160,9 +2198,12 @@
     else if (target === "stolen-car") enterVehicle("stolen");
     else if (target === "steal-traffic") stealTrafficCar();
     else if (target === "truck-exit") leaveTruck();
-    else if (target === "raffle") openRaffle();
-    else if (target === "pawn") openPawnshop();
-    else if (target === "gas") openGasStation();
+    else if (target === "raffle") enterInterior("raffle");
+    else if (target === "pawn") enterInterior("pawn");
+    else if (target === "gas") enterInterior("gas");
+    else if (target === "raffle-counter") openRaffle();
+    else if (target === "pawn-counter") openPawnshop();
+    else if (target === "gas-counter") openGasStation();
     else if (target === "race") openRacePanel();
     else if (target === "garden-showdown") startGardenShowdown();
     else if (target === "didi-stop") handleDidiStop();
@@ -3576,6 +3617,12 @@
       "rochi-home": "USAR: dejar a Rochi en su casa",
       bribe: "USAR: sobornar esta unidad por $75",
       "race-abandon": "USAR: abandonar carrera y perder la feria",
+      raffle: "USAR: entrar a Rifas El Aferrado",
+      "raffle-counter": "USAR: jugar una rifa",
+      pawn: "USAR: entrar al Empeño Volcán",
+      "pawn-counter": "USAR: empeñar o vender",
+      gas: "USAR: entrar a la tienda",
+      "gas-counter": "USAR: cargar gasolina y comprar",
       "agronomia-start": "USAR: recibir trabajo de campo",
       "agronomia-valve": "USAR: revisar válvula y tomar muestra",
       "agronomia-finish": "USAR: entregar las mediciones",
@@ -5244,56 +5291,110 @@
 
   function drawInterior() {
     const room = interiors[state.scene] || interiors.house;
-    ctx.fillStyle = "#201e22";
-    ctx.fillRect(0, 0, INTERIOR.width, INTERIOR.height);
-    ctx.fillStyle = room.floor;
-    ctx.fillRect(42, 42, INTERIOR.width - 84, INTERIOR.height - 64);
-    ctx.strokeStyle = "rgba(65,53,43,.25)";
-    ctx.lineWidth = 2;
-    for (let x = 45; x < INTERIOR.width - 40; x += 36) {
-      ctx.beginPath();
-      ctx.moveTo(x, 44);
-      ctx.lineTo(x, INTERIOR.height - 22);
-      ctx.stroke();
+    const W = INTERIOR.width;
+    const H = INTERIOR.height;
+
+    // Muro con grosor: antes el interior era un rectángulo de color y ya.
+    ctx.fillStyle = "#14161b";
+    ctx.fillRect(0, 0, W, H);
+    bevelRect(20, 20, W - 40, H - 40, "#3a3d45", "#585c66", "#232630", 4);
+    ctx.fillStyle = "#1b1e24";
+    ctx.fillRect(px(42), px(42), px(W - 84), px(H - 84));
+
+    // Piso a cuadros, alternando tono.
+    const tile = 36;
+    const floorDark = shade(room.floor, -22);
+    for (let x = 44; x < W - 44; x += tile) {
+      for (let y = 44; y < H - 44; y += tile) {
+        const even = (Math.floor(x / tile) + Math.floor(y / tile)) % 2 === 0;
+        ctx.fillStyle = even ? room.floor : floorDark;
+        ctx.fillRect(px(x), px(y), Math.min(tile, W - 44 - x), Math.min(tile, H - 44 - y));
+      }
     }
-    for (let y = 44; y < INTERIOR.height - 20; y += 36) {
-      ctx.beginPath();
-      ctx.moveTo(44, y);
-      ctx.lineTo(INTERIOR.width - 42, y);
-      ctx.stroke();
+    // Junta y desgaste.
+    ctx.fillStyle = "rgba(0,0,0,.16)";
+    for (let x = 44; x < W - 44; x += tile) ctx.fillRect(px(x), 44, 1, px(H - 88));
+    for (let y = 44; y < H - 44; y += tile) ctx.fillRect(44, px(y), px(W - 88), 1);
+
+    // Zoclo.
+    ctx.fillStyle = shade(room.floor, -46);
+    ctx.fillRect(px(42), px(42), px(W - 84), 8);
+    ctx.fillStyle = "rgba(255,255,255,.08)";
+    ctx.fillRect(px(42), px(50), px(W - 84), 2);
+
+    // Lámparas de techo.
+    for (const lx of [W * 0.28, W * 0.72]) {
+      ctx.fillStyle = "rgba(255,240,190,.09)";
+      ctx.fillRect(px(lx - 90), 52, 180, px(H - 120));
+      ctx.fillStyle = "#d8d3c0";
+      ctx.fillRect(px(lx - 34), 58, 68, 9);
+      ctx.fillStyle = "#fff6cf";
+      ctx.fillRect(px(lx - 31), 60, 62, 4);
     }
 
-    const furniture = room.furniture;
-    for (const item of furniture) {
-      ctx.fillStyle = "rgba(0,0,0,.35)";
-      ctx.fillRect(item.x + 8, item.y + 9, item.w, item.h);
-      ctx.fillStyle = item.color;
-      ctx.fillRect(item.x, item.y, item.w, item.h);
-      ctx.strokeStyle = "#16171a";
-      ctx.lineWidth = 5;
-      ctx.strokeRect(item.x, item.y, item.w, item.h);
-      ctx.fillStyle = "rgba(255,255,255,.48)";
-      ctx.font = "700 12px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(item.label, item.x + item.w / 2, item.y + item.h / 2 + 4);
+    // Muebles con volumen y etiqueta legible.
+    for (const item of room.furniture) {
+      ctx.fillStyle = "rgba(6,8,12,.42)";
+      ctx.fillRect(px(item.x + 7), px(item.y + 8), px(item.w), px(item.h));
+      bevelRect(item.x, item.y, item.w, item.h, item.color, shade(item.color, 30), shade(item.color, -34), 3);
+      // Contenido de repisa: cajas apiladas.
+      const cols = Math.max(1, Math.floor(item.w / 34));
+      const rows = Math.max(1, Math.floor(item.h / 40));
+      for (let c = 0; c < cols; c += 1) {
+        for (let r = 0; r < rows; r += 1) {
+          const s = idSeed(`${state.scene}-${item.label}-${c}-${r}`);
+          if (seededValue(s) < 0.3) continue;
+          const bx = item.x + 8 + c * (item.w - 12) / cols;
+          const by = item.y + 8 + r * (item.h - 12) / rows;
+          const tone = ["#c8433f", "#3f6fa8", "#c9973c", "#4f9163", "#b7ae98"][Math.floor(seededValue(s + 3) * 5)];
+          ctx.fillStyle = tone;
+          ctx.fillRect(px(bx), px(by), px((item.w - 12) / cols - 6), px((item.h - 12) / rows - 8));
+          ctx.fillStyle = "rgba(0,0,0,.28)";
+          ctx.fillRect(px(bx), px(by + (item.h - 12) / rows - 10), px((item.w - 12) / cols - 6), 2);
+        }
+      }
+      outlineRect(item.x, item.y, item.w, item.h, palette.outline, 3);
+      queueWorldLabel(item.x + item.w / 2, item.y + item.h / 2 - 3, item.label, { scale: 1, color: "#efe7d2", range: 0 });
     }
     drawInteriorDetails();
 
+    // Salida marcada en el piso, con flechas.
+    ctx.fillStyle = "#1b1e24";
+    ctx.fillRect(px(390), px(H - 74), 120, 24);
     ctx.fillStyle = palette.pink;
-    ctx.fillRect(395, 596, 110, 16);
-    ctx.strokeStyle = "#111";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(395, 596, 110, 16);
+    ctx.fillRect(px(395), px(H - 70), 110, 16);
+    ctx.fillStyle = "#0b0d12";
+    for (let i = 0; i < 3; i += 1) ctx.fillRect(px(420 + i * 30), px(H - 66), 8, 8);
+    queueWorldLabel(450, H - 84, "SALIDA", { scale: 1, color: palette.pink, range: 0 });
 
-    ctx.fillStyle = palette.acid;
-    ctx.font = "900 24px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText(room.label, 450, 35);
     if (room.service) {
-      drawPerson({ x: 450, y: 115, angle: Math.PI / 2, color: "#4f78a4" });
+      const clerk = room.clerk || {};
+      const person = {
+        x: 450,
+        y: 118,
+        angle: Math.PI / 2,
+        status: "active",
+        moving: false,
+        speech: clerk.line || "",
+        speechTimer: distance(state.player, { x: 450, y: 205 }) < 118 ? 1 : 0,
+        look: {
+          skin: clerk.skin || "#c98d63",
+          hair: clerk.hair || "#241a14",
+          shirt: clerk.shirt || "#4f78a4",
+          pants: "#2b3038",
+          build: 1,
+          longHair: !!clerk.longHair,
+          cap: !!clerk.cap,
+          capColor: "#2f3a49",
+          backpack: false,
+        },
+      };
+      drawPerson(person);
+      if (clerk.name) queueWorldLabel(450, 78, clerk.name, { scale: 1, color: "#cfd4d8", range: 0 });
     }
     if (state.scene === "cbtis") for (const npc of storyEnemies) drawPerson(npc);
     if (state.stifFollowing) drawPerson(state.stif, false, true);
+    if (state.rochi.following && !state.rochi.asleep) drawPerson(state.rochi, false, false, true);
     drawPerson(state.player, true, false);
     drawTargetMarker();
     drawParticles();
