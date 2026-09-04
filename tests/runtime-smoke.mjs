@@ -138,8 +138,9 @@ for (let index = 0; index < 4; index += 1) use.listeners.get("pointerdown")({ pr
 if (!elementFor("#objective-text").textContent.includes("PELÍCANO")) throw new Error("El diálogo de Stif no abrió el recorrido del tutorial");
 if (elementFor("#money").textContent !== "$825") throw new Error("Stif no entregó los $800 de prueba");
 
-sandbox.window.__EVE_GTA_DEBUG__.state.player.x = 2828;
-sandbox.window.__EVE_GTA_DEBUG__.state.player.y = 1418;
+const poi = sandbox.window.__EVE_GTA_DEBUG__.POI;
+sandbox.window.__EVE_GTA_DEBUG__.state.player.x = poi.pelicano.x;
+sandbox.window.__EVE_GTA_DEBUG__.state.player.y = poi.pelicano.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 if (!elementFor("#objective-text").textContent.includes("CAGUAMA")) throw new Error("Entrar a El Pelícano no activó la compra del tutorial");
 
@@ -209,10 +210,10 @@ debug.state.player.y = 595;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 debug.state.inVehicle = true;
 debug.state.vehicleKind = "truck";
-debug.state.truck.x = 5365;
-debug.state.truck.y = 3455;
-debug.state.player.x = 5365;
-debug.state.player.y = 3455;
+debug.state.truck.x = poi.race.x;
+debug.state.truck.y = poi.race.y;
+debug.state.player.x = poi.race.x;
+debug.state.player.y = poi.race.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 elementFor("#panel-actions").children[0].click();
 let simulatedNow = performance.now() + 100;
@@ -224,10 +225,10 @@ for (const point of debug.raceRoute.slice(1)) {
 }
 if (!elementFor("#objective-text").textContent.includes("JARDÍN DEL PISTO")) throw new Error("Terminar la carrera no activó el regreso al Jardín");
 
-debug.state.truck.x = 3360;
-debug.state.truck.y = 865;
-debug.state.player.x = 3360;
-debug.state.player.y = 865;
+debug.state.truck.x = poi.garden.x;
+debug.state.truck.y = poi.garden.y;
+debug.state.player.x = poi.garden.x;
+debug.state.player.y = poi.garden.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 4; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 if (!elementFor("#objective-text").textContent.includes("CHOLOS")) throw new Error("El regreso al Jardín no inició la pelea");
@@ -287,8 +288,8 @@ nextFrame(simulatedNow);
 if (debug.state.wanted !== 2) throw new Error("La búsqueda del Sentra bajó de las dos estrellas obligatorias antes de entregarlo");
 const moneyBeforeFede = debug.state.money;
 const rochiBeforeFede = debug.state.rochi.cash;
-debug.state.story.fedeCar.x = 5005;
-debug.state.story.fedeCar.y = 1050;
+debug.state.story.fedeCar.x = poi.fedeDelivery.x;
+debug.state.story.fedeCar.y = poi.fedeDelivery.y;
 simulatedNow += 50;
 nextFrame(simulatedNow);
 if (debug.state.money !== moneyBeforeFede + 4000) throw new Error("Fede no mostró el pago bruto de $4,000 durante la cinemática");
@@ -317,8 +318,8 @@ nextFrame(simulatedNow);
 for (let index = 0; index < 4; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 if (!debug.state.story.completed.cbtis || !debug.state.story.corralonUnlocked) throw new Error("Faltistas no desbloqueó la moto de Rochi");
 
-debug.state.player.x = 5910;
-debug.state.player.y = 3715;
+debug.state.player.x = poi.agronomia.x;
+debug.state.player.y = poi.agronomia.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 3; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 for (const valve of debug.state.story.valves) {
@@ -326,14 +327,14 @@ for (const valve of debug.state.story.valves) {
   debug.state.player.y = valve.y;
   use.listeners.get("pointerdown")({ preventDefault() {} });
 }
-debug.state.player.x = 5910;
-debug.state.player.y = 3715;
+debug.state.player.x = poi.agronomia.x;
+debug.state.player.y = poi.agronomia.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 for (let index = 0; index < 3; index += 1) use.listeners.get("pointerdown")({ preventDefault() {} });
 if (!debug.state.story.completed.agronomia || debug.state.story.mission !== "rochiTruth") throw new Error("La misión de agronomía no completó sus cuatro muestras");
 
-debug.state.player.x = 4580;
-debug.state.player.y = 985;
+debug.state.player.x = poi.marina.x;
+debug.state.player.y = poi.marina.y;
 use.listeners.get("pointerdown")({ preventDefault() {} });
 debug.state.player.x = 450;
 debug.state.player.y = 205;
@@ -408,5 +409,33 @@ debug.state.truck.y = trafficCar.y;
 trafficCar.collisionCooldown = 0;
 debug.updateTraffic(0);
 if (debug.state.truck.health >= 100) throw new Error("El tráfico sigue siendo decorativo y no causa colisiones");
+
+// Regresión: ningún edificio con nombre puede quedar plantado encima de una
+// calle. Antes había 22 así y el tráfico atravesaba la Casa de Eve.
+const sobrepuestos = debug.buildings.filter((b) => debug.rectTouchesRoad(b, 4)).map((b) => b.id);
+if (sobrepuestos.length) throw new Error(`Edificios encima de la calle: ${sobrepuestos.join(", ")}`);
+
+// Regresión: tocar una patrulla NO puede mandarte a los separos. Solo morir.
+debug.state.jail.active = false;
+debug.state.health = 100;
+debug.state.armor = 0;
+debug.state.wanted = 3;
+debug.state.scene = "city";
+debug.state.inVehicle = false;
+debug.policeOfficers.length = 0;
+debug.policeUnits.length = 0;
+debug.policeUnits.push({ x: debug.state.player.x, y: debug.state.player.y, angle: 0, heading: 0, shotTimer: 99, health: 100, status: "active", police: true, cash: 0, dropped: false, deployed: true, deployTimer: 99, speech: "", speechTimer: 0 });
+debug.updateWanted(1 / 60);
+if (debug.state.jail.active) throw new Error("La patrulla sigue arrestando de un roce");
+if (debug.state.health >= 100) throw new Error("El choque con la patrulla debería quitar vida");
+
+// Regresión: al llegar a cero de vida sí caes en los separos.
+debug.state.health = 0;
+debug.state.lastDeathCause = "prueba";
+debug.recoverEve();
+if (!debug.state.jail.active) throw new Error("Morir debería mandar a Eve a los separos");
+debug.state.jail.active = false;
+debug.state.health = 100;
+debug.state.wanted = 0;
 
 console.log(`Prueba de ejecución terminada: historia completa, ${debug.urbanBuildings.length} edificios urbanos, ${debug.traffic.length} vehículos, rutinas civiles y colisiones correctas.`);
